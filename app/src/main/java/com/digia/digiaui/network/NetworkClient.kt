@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import com.digia.digiaui.utils.DeveloperConfig
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -24,7 +25,7 @@ class NetworkClient(
     val baseUrl: String,
     digiaHeaders: Map<String, String>,
     projectNetworkConfiguration: NetworkConfiguration,
-    developerConfig: com.digia.digiaui.init.DeveloperConfig = null,
+    developerConfig: DeveloperConfig? = null,
     val context: Context? = null
 ) {
     val digiaClient: OkHttpClient
@@ -180,10 +181,13 @@ class NetworkClient(
     ): BaseResponse<T> {
         return withContext(Dispatchers.IO) {
             try {
-                val requestBody =
-                        data?.toString()?.toRequestBody("application/json".toMediaTypeOrNull())
+                val requestBody = when {
+                    data == null -> null
+                    data is Map<*, *> -> Gson().toJson(data).toRequestBody("application/json".toMediaTypeOrNull())
+                    else -> data.toString().toRequestBody("application/json".toMediaTypeOrNull())
+                }
 
-                val fullUrl = "$baseUrl/$path".replace("//", "/")
+                val fullUrl = "$baseUrl$path".replace("/$path", path)
 
                 val request = Request.Builder()
                         .url(fullUrl)
@@ -192,11 +196,12 @@ class NetworkClient(
                         .build()
 
                 val response = digiaClient.newCall(request).execute()
+                println(response.request)
 
                 if (response.isSuccessful) {
                     val json = response.body?.string()
-                    @Suppress("UNCHECKED_CAST")
-                    val map = Gson().fromJson(json, Map::class.java) as Map<String, Any?>
+                    val type = object : TypeToken<Map<String, Any?>>() {}.type
+                    val map = Gson().fromJson<Map<String, Any?>>(json, type)
                     BaseResponse.fromJson(map, fromJsonT)
                 } else {
                     BaseResponse(isSuccess = false, data = null, error = mapOf("code" to response.code))
@@ -230,17 +235,17 @@ class NetworkClient(
         ): Map<String, String> {
             val headers =
                     mutableMapOf(
-                            "x-digia-version" to packageVersion,
+//                            "x-digia-version" to packageVersion,
                             "x-digia-project-id" to accessKey,
-                            "x-digia-platform" to platform,
-                            "x-app-package-name" to packageName,
-                            "x-app-version" to appVersion,
-                            "x-app-build-number" to appBuildNumber,
+//                            "x-digia-platform" to platform,
+//                            "x-app-package-name" to packageName,
+//                            "x-app-version" to appVersion,
+//                            "x-app-build-number" to appBuildNumber,
                             "x-digia-environment" to environment
                     )
-            uuid?.let { headers["x-digia-device-id"] = it }
+//            uuid?.let { headers["x-digia-device-id"] = it }
             if (buildSignature.isNotEmpty()) {
-                headers["x-app-signature"] = buildSignature
+//                headers["x-app-signature"] = buildSignature
             }
             return headers
         }

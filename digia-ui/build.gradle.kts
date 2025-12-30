@@ -2,7 +2,11 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("maven-publish")
 }
+
+group = "com.digia"
+version = "1.0.0"
 
 android {
     namespace = "com.digia.digiaui"

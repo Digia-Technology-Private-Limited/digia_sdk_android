@@ -2,74 +2,138 @@ package com.digia.digiaui.config.source
 
 import com.digia.digiaui.config.ConfigException
 import com.digia.digiaui.config.ConfigProvider
-import com.digia.digiaui.config.source.ConfigSource
 import com.digia.digiaui.config.model.DUIConfig
 import com.digia.digiaui.framework.logging.Logger
 import com.google.gson.Gson
-import java.io.File
-import kotlinx.coroutines.withTimeout
+import com.google.gson.reflect.TypeToken
 
 /**
- * ConfigSource that loads configuration from network with timeout and caching
+ * ConfigSource that loads configuration from network with file download and caching
  *
- * This is used in Release builds to fetch the latest config from the network with a timeout
- * constraint. If successful, it also caches the result for future use by CachedConfigSource.
- *
- * Differences from NetworkDUIConfigSource:
- * - Has configurable timeout
- * - Automatically caches successful responses
- * - Used primarily in release builds
+ * This source first fetches metadata from the network, checks if a new config should be downloaded,
+ * and conditionally downloads and caches the full config file. Used for Versioned flavor.
  *
  * @param provider The ConfigProvider to handle network requests
- * @param endpoint The API endpoint path
- * @param timeout Timeout in milliseconds (default 5 seconds)
+ * @param networkPath The API endpoint path for metadata
+ * @param cacheFilePath Path to cache the downloaded config file
+ * @param timeout Optional timeout for network operations
  */
 class NetworkFileConfigSource(
-        private val provider: ConfigProvider,
-        private val endpoint: String,
-        private val timeout: Long = 5000L
+    private val provider: ConfigProvider,
+    private val networkPath: String,
+    private val cacheFilePath: String = "appConfig.json",
+    private val timeout: Long = 3000
 ) : ConfigSource {
 
     override suspend fun getConfig(): DUIConfig {
         try {
-            Logger.log("Fetching config from network (timeout: ${timeout}ms)")
+            Logger.log("Loading config from network file source: $networkPath")
 
-            // Fetch with timeout
-            val appConfig = withTimeout(timeout) { provider.getDUIConfigFromNetwork(endpoint) }
+            // 1. Get file metadata from network
+            val metadata = getConfigMetadata()
+            if (!shouldDownloadNewConfig(metadata)) {
+                return loadCachedConfig()
+            }
 
-            // Cache the result
-            cacheConfig(appConfig)
+            // 2. Download and cache the file
+            val fileUrl = getFileUrl(metadata)
+            val config = downloadAndCacheConfig(fileUrl)
 
-            Logger.log("Successfully fetched and cached config from network")
-            return appConfig
+            // 3. Initialize functions
+            config.functionsFilePath?.let { functionsPath ->
+                try {
+                    provider.initFunctions(
+                            remotePath = functionsPath,
+                            version = config.version
+                    )
+                } catch (e: Exception) {
+                    Logger.log("Failed to initialize functions: $functionsPath")
+                }
+            }
+
+            Logger.log("Successfully loaded config from network file")
+            return config
+        } catch (e: ConfigException) {
+            throw e
         } catch (e: Exception) {
-            throw ConfigException.networkError(
-                    "Failed to fetch config from network: ${e.message}",
-                    e
+            throw ConfigException(
+                    "Failed to load config from network file",
+                    type = com.digia.digiaui.config.ConfigErrorType.NETWORK,
+                    originalError = e
             )
         }
     }
 
-    /** Caches the config to disk for later use */
-    private fun cacheConfig(config: DUIConfig) {
+    /** Extracts the file URL from metadata */
+    private fun getFileUrl(metadata: Map<String, Any>): String {
+        val fileUrl = metadata["appConfigFileUrl"] as? String
+        if (fileUrl == null) {
+            throw ConfigException("Config File URL not found")
+        }
+        return fileUrl
+    }
+
+    /** Gets config metadata from network */
+    private suspend fun getConfigMetadata(): Map<String, Any> {
+        val data = provider.getAppConfigFromNetwork(networkPath)
+        if (data == null || data.isEmpty()) {
+            throw ConfigException("Failed to fetch config metadata")
+        }
+        return data
+    }
+
+    /** Determines if a new config should be downloaded */
+    private fun shouldDownloadNewConfig(metadata: Map<String, Any>): Boolean {
+        return metadata["versionUpdated"] != false
+    }
+
+    /** Loads cached config from file */
+    private suspend fun loadCachedConfig(): DUIConfig {
+        val cachedJson = provider.fileOps.readString(cacheFilePath)
+        if (cachedJson == null) {
+            throw ConfigException("No cached config found")
+        }
+        val type = object : TypeToken<Map<String, Any>>() {}.type
+        val jsonData = Gson().fromJson<Map<String, Any>>(cachedJson, type)
+        return DUIConfig.fromMap(jsonData)
+    }
+
+    /** Downloads and caches the config file */
+    private suspend fun downloadAndCacheConfig(fileUrl: String): DUIConfig {
+        Logger.log("Downloading config from: $fileUrl")
+
+        // Download file to memory (not to file, since we need to parse it)
+        val response = provider.downloadOps.downloadFile(fileUrl, cacheFilePath)
+        if (response == null) {
+            throw ConfigException("Failed to download config file")
+        }
+
+        // For OkHttp Response, we need to read the body
+        val responseBody = response.body
+        if (responseBody == null) {
+            throw ConfigException("Failed to download config file - empty response")
+        }
+
+        // Parse the downloaded content
+        val fileBytes = responseBody.bytes()
+        val fileString = String(fileBytes, Charsets.UTF_8)
+        val type = object : TypeToken<Map<String, Any>>() {}.type
+        val jsonData = Gson().fromJson<Map<String, Any>>(fileString, type)
+        val config = DUIConfig.fromMap(jsonData)
+
+        // Cache the file content
         try {
-            val context = provider.networkClient.context ?: return
-
-            // Create cache directory
-            val cacheDir = File(context.cacheDir, "config")
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs()
+            val cacheSuccess = provider.fileOps.writeStringToFile(fileString, cacheFilePath)
+            if (cacheSuccess) {
+                Logger.log("Config cached successfully to: $cacheFilePath")
+            } else {
+                Logger.log("Failed to cache config file: write failed")
             }
-
-            // Write to cache file
-            val cacheFile = File(cacheDir, "appConfig.json")
-            val jsonString = Gson().toJson(config)
-            cacheFile.writeText(jsonString)
-
-            Logger.log("Config cached successfully")
         } catch (e: Exception) {
-            Logger.log("Failed to cache config: ${e.message}")
+            Logger.log("Failed to cache config file: ${e.message}")
             // Don't throw - caching is optional
         }
+
+        return config
     }
 }

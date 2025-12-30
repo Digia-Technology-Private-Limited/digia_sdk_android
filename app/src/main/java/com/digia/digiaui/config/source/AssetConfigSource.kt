@@ -2,10 +2,10 @@ package com.digia.digiaui.config.source
 
 import com.digia.digiaui.config.ConfigException
 import com.digia.digiaui.config.ConfigProvider
-import com.digia.digiaui.config.source.ConfigSource
 import com.digia.digiaui.config.model.DUIConfig
 import com.digia.digiaui.framework.logging.Logger
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 /**
  * ConfigSource that loads configuration from bundled assets
@@ -17,7 +17,7 @@ import com.google.gson.Gson
  * - assets/config.json (or custom appConfigPath)
  * - assets/functions.json (or custom functionsPath)
  *
- * @param provider The ConfigProvider (used for context)
+ * @param provider The ConfigProvider (used for bundleOps)
  * @param appConfigPath Path to the app config asset file
  * @param functionsPath Path to the functions asset file (optional)
  */
@@ -31,34 +31,25 @@ class AssetConfigSource(
         try {
             Logger.log("Loading config from assets: $appConfigPath")
 
-            // Read the asset file content
-            val jsonString =
-                    provider.networkClient
-                            .context
-                            ?.assets
-                            ?.open(appConfigPath)
-                            ?.bufferedReader()
-                            ?.use { it.readText() }
-                            ?: throw ConfigException.assetError(
-                                    "Context not available for asset loading"
-                            )
+            // Read the asset file content using bundleOps
+            val burnedJson = provider.bundleOps.readString(appConfigPath)
 
-            // Parse the JSON
-            val appConfig =
-                    Gson().fromJson(jsonString, DUIConfig::class.java)
-                            ?: throw ConfigException.invalidData("Failed to parse asset config")
+            // Parse the JSON and create DUIConfig
+            val type = object : TypeToken<Map<String, Any>>() {}.type
+            val jsonData = Gson().fromJson<Map<String, Any>>(burnedJson, type)
+            val config = DUIConfig.fromMap(jsonData)
 
             // Initialize functions if path provided
             functionsPath?.let {
                 try {
-                    provider.initFunctions(it)
+                    provider.initFunctions(localPath = it)
                 } catch (e: Exception) {
                     Logger.log("Functions file not found or failed to load: $it")
                 }
             }
 
             Logger.log("Successfully loaded config from assets")
-            return appConfig
+            return config
         } catch (e: ConfigException) {
             throw e
         } catch (e: Exception) {

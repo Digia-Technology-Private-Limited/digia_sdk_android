@@ -1,5 +1,12 @@
 package com.digia.digiaui.init
 
+enum class FlavorOption(val optionName: String) {
+    DEBUG("debug"),
+    STAGING("staging"),
+    RELEASE("release"),
+    VERSION("version")
+}
+
 sealed class Flavor {
     abstract val value: FlavorOption
     abstract val environment: Environment

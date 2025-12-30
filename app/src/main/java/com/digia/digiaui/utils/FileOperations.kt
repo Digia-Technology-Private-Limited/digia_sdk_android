@@ -86,13 +86,40 @@ import java.io.IOException
 
 
 interface FileOperations {
+    suspend fun readString(fileName: String): String?
+    suspend fun writeStringToFile(content: String, fileName: String): Boolean
     suspend fun writeBytesToFile(bytes: ByteArray, fileName: String): Boolean
 }
 
 class FileOperationsImpl : FileOperations {
+    override suspend fun readString(fileName: String): String? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val file = File(fileName)
+            if (file.exists()) {
+                file.readText()
+            } else {
+                null
+            }
+        } catch (e: IOException) {
+            null
+        }
+    }
+
+    override suspend fun writeStringToFile(content: String, fileName: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val file = File(fileName)
+            file.parentFile?.mkdirs()
+            file.writeText(content)
+            true
+        } catch (e: IOException) {
+            false
+        }
+    }
+
     override suspend fun writeBytesToFile(bytes: ByteArray, fileName: String): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
             val file = File(fileName)
+            file.parentFile?.mkdirs()
             file.writeBytes(bytes)
             true
         } catch (e: IOException) {

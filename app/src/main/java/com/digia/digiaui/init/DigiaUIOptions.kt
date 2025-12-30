@@ -3,6 +3,7 @@ package com.digia.digiaui.init
 import android.content.Context
 import com.digia.digiaui.analytics.DUIAnalytics
 import com.digia.digiaui.network.NetworkConfiguration
+import com.digia.digiaui.utils.DeveloperConfig
 
 /**
  * Configuration options for initializing the Digia UI SDK.
@@ -42,15 +43,3 @@ data class DigiaUIOptions(
         val developerConfig: DeveloperConfig = DeveloperConfig()
 )
 
-/**
- * Developer-specific configuration for debugging and development tools.
- *
- * @param baseUrl Optional override for the API base URL
- * @param enableInspector Whether to enable the Digia Inspector for debugging
- * @param enableLogging Whether to enable verbose SDK logging
- */
-data class DeveloperConfig(
-        val baseUrl: String? = null,
-        val enableInspector: Boolean = false,
-        val enableLogging: Boolean = false
-)

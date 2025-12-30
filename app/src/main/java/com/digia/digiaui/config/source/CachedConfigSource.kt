@@ -1,12 +1,12 @@
 package com.digia.digiaui.config.source
 
+import com.digia.digiaui.config.ConfigErrorType
 import com.digia.digiaui.config.ConfigException
 import com.digia.digiaui.config.ConfigProvider
-import com.digia.digiaui.config.source.ConfigSource
 import com.digia.digiaui.config.model.DUIConfig
 import com.digia.digiaui.framework.logging.Logger
 import com.google.gson.Gson
-import java.io.File
+import com.google.gson.reflect.TypeToken
 
 /**
  * ConfigSource that loads configuration from cached file
@@ -14,48 +14,51 @@ import java.io.File
  * This reads previously downloaded and cached configuration from the app's cache directory. Used in
  * Release builds to provide fast startup with potentially newer config than burned assets.
  *
- * Cache files are stored in: context.cacheDir/config/
- *
- * @param provider The ConfigProvider (used for context)
- * @param fileName The name of the cached config file
+ * @param provider The ConfigProvider (used for fileOps)
+ * @param cachedFilePath The path to the cached config file
  */
 class CachedConfigSource(
         private val provider: ConfigProvider,
-        private val fileName: String = "appConfig.json"
+        private val cachedFilePath: String
 ) : ConfigSource {
 
     override suspend fun getConfig(): DUIConfig {
         try {
-            Logger.log("Loading config from cache: $fileName")
+            Logger.log("Loading config from cache: $cachedFilePath")
 
-            val context =
-                    provider.networkClient.context
-                            ?: throw ConfigException.cacheError(
-                                    "Context not available for cache access"
-                            )
-
-            // Get cache directory
-            val cacheDir = File(context.cacheDir, "config")
-            val cacheFile = File(cacheDir, fileName)
-
-            if (!cacheFile.exists()) {
-                throw ConfigException.cacheError("Cache file not found: $fileName")
+            // Read cached file using fileOps
+            val cachedJson = provider.fileOps.readString(cachedFilePath)
+            if (cachedJson == null) {
+                throw ConfigException("No cached config found")
             }
 
-            // Read cached file
-            val jsonString = cacheFile.readText()
+            // Parse the JSON and create DUIConfig
+            val type = object : TypeToken<Map<String, Any>>() {}.type
+            val jsonData = Gson().fromJson<Map<String, Any>>(cachedJson, type)
+            val config = DUIConfig.fromMap(jsonData)
 
-            // Parse the JSON
-            val appConfig =
-                    Gson().fromJson(jsonString, DUIConfig::class.java)
-                            ?: throw ConfigException.invalidData("Failed to parse cached config")
+            // Initialize functions
+            config.functionsFilePath?.let { functionsPath ->
+                try {
+                    provider.initFunctions(
+                            remotePath = functionsPath,
+                            version = config.version
+                    )
+                } catch (e: Exception) {
+                    Logger.log("Failed to initialize functions from cached config: $functionsPath")
+                }
+            }
 
-            Logger.log("Successfully loaded config from cache (version: ${appConfig.version})")
-            return appConfig
+            Logger.log("Successfully loaded config from cache (version: ${config.version})")
+            return config
         } catch (e: ConfigException) {
             throw e
         } catch (e: Exception) {
-            throw ConfigException.cacheError("Failed to load config from cache: ${e.message}", e)
+            throw ConfigException(
+                    "Failed to load config from cache",
+                    type = ConfigErrorType.CACHE,
+                    originalError = e
+            )
         }
     }
 }
