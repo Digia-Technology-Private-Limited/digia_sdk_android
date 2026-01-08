@@ -51,9 +51,9 @@ class ExprOr<T : Any> private constructor(
                 // New format: {"expr": "expression"}
                 return true
             }
-            // Old format: "@{expression}"
+            // Old format: "${expression}"
             if (value is String) {
-                return value.startsWith("@{") && value.endsWith("}")
+                return value.startsWith("\${") && value.endsWith("}")
             }
             return false
         }

@@ -7,6 +7,13 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     // Register Text widget
     register("digia/text", ::textBuilder)
 
-    // Register Scaffold widget
+    // Register layout widgets
+    register("digia/column", ::columnBuilder)
+    register("digia/row", ::rowBuilder)
+    
+    // Register list widget
+    register("digia/listView", ::listViewBuilder)
+
+    // Register Scaffold widget (commented out for now)
     // register("digia/scaffold", ::scaffoldBuilder)
 }

@@ -76,18 +76,18 @@ fun JsonLike.valueFor(keyPath: String): Any? {
  * For example, 'a.b.c' will set the value at map['a']['b']['c'].
  * If intermediate maps do not exist, they will be created.
  */
-fun JsonLike.setValueFor(keyPath: String, value: Any?) {
-    val keysSplit = keyPath.split('.').toMutableList()
-    val thisKey = keysSplit.removeAt(0)
-
-    if (keysSplit.isEmpty()) {
-        this[thisKey] = value
-        return
-    }
-
-    if (this[thisKey] !is Map<*, *>) {
-        this[thisKey] = mutableMapOf<String, Any?>()
-    }
-
-    (this[thisKey] as JsonLike).setValueFor(keysSplit.joinToString("."), value)
-}
+//fun JsonLike.setValueFor(keyPath: String, value: Any?) {
+//    val keysSplit = keyPath.split('.').toMutableList()
+//    val thisKey = keysSplit.removeAt(0)
+//
+//    if (keysSplit.isEmpty()) {
+//        this[thisKey] = value
+//        return
+//    }
+//
+//    if (this[thisKey] !is Map<*, *>) {
+//        this[thisKey] = mutableMapOf<String, Any?>()
+//    }
+//
+//    (this[thisKey] as JsonLike).setValueFor(keysSplit.joinToString("."), value)
+//}

@@ -1,5 +1,6 @@
 package com.digia.digiaui.framework.models
 import com.digia.digiaui.framework.utils.JsonLike
+import com.digia.digiaui.framework.utils.JsonUtil.Companion.tryKeys
 
 enum class NodeType {
     widget,
@@ -22,7 +23,7 @@ sealed class VWData {
 
     companion object {
         fun fromJson(json: JsonLike): VWData {
-            val nodeType = NodeType.fromString(json["nodeType"] as? String ?: json["category"] as? String ?: "widget") ?: NodeType.widget
+            val nodeType = NodeType.fromString(tryKeys(json,listOf("category","nodeType"))?: "widget") ?: NodeType.widget
 
             return when (nodeType) {
                 NodeType.widget -> VWNodeData.fromJson(json)
@@ -37,20 +38,21 @@ sealed class VWData {
 data class VWNodeData(
     override val refName: String? = null,
     val type: String, // Widget type (e.g., "digia/text")
-    val props: Map<String, Any?> = emptyMap(), // Widget-specific properties
+    val props: Props = Props.empty(), // Widget-specific properties
     val commonProps: CommonProps? = null, // Common properties
-    val parentProps: JsonLike? = null, // Props for parent container
+    val parentProps: Props? = null, // Props for parent container
     val childGroups: Map<String, List<VWData>>? = null // Child widgets
+//    val repeatData: VWRepeatData? = null
 ) : VWData() {
     companion object {
         fun fromJson(json: JsonLike): VWNodeData {
             return VWNodeData(
-                    refName = json["refName"] as? String,
+                    refName = tryKeys<String>(json, listOf("varName", "refName")),
                     type = json["type"] as? String ?: "",
-                    props = json["props"] as? JsonLike ?: emptyMap(),
+                    props  = (json["props"] as? JsonLike)?.let(::Props) ?: Props.empty(),
                     commonProps = CommonProps.fromJson(json["commonProps"] as? JsonLike),
-                    parentProps = json["parentProps"] as? JsonLike,
-                    childGroups = parseChildGroups(json["childGroups"])
+                    parentProps  = (json["parentProps"] as? JsonLike)?.let(::Props) ?: Props.empty(),
+                childGroups = tryKeys(json, listOf("childGroups", "children"), VWNodeData::parseChildGroups),
             )
         }
 
@@ -76,7 +78,7 @@ data class VWComponentData(
         val id: String, // Component ID
         val args: Map<String, ExprOr<Any>?>? = null, // Arguments to pass
         val commonProps: CommonProps? = null,
-        val parentProps: JsonLike? = null
+        val parentProps: Props? = null
 ) : VWData() {
     companion object {
         fun fromJson(json: JsonLike): VWComponentData {
@@ -88,7 +90,7 @@ data class VWComponentData(
                                 ExprOr.fromValue<Any>(it.value)
                             },
                     commonProps = CommonProps.fromJson(json["commonProps"] as? JsonLike),
-                    parentProps = json["parentProps"] as? JsonLike
+                    parentProps = (json["parentProps"] as? JsonLike)?.let(::Props) ?: Props.empty()
             )
         }
     }
@@ -99,7 +101,7 @@ data class VWStateData(
         override val refName: String? = null,
         val initStateDefs: Map<String, Variable>, // State variables
         val childGroups: Map<String, List<VWData>>? = null,
-        val parentProps: JsonLike? = null
+        val parentProps: Props? = null
 ) : VWData() {
     companion object {
         fun fromJson(json: JsonLike): VWStateData {
@@ -107,7 +109,7 @@ data class VWStateData(
                     refName = json["refName"] as? String,
                     initStateDefs = parseVariables(json["initStateDefs"]),
                     childGroups = VWNodeData.parseChildGroups(json["childGroups"]),
-                    parentProps = json["parentProps"] as? JsonLike
+                    parentProps = (json["parentProps"] as? JsonLike)?.let(::Props) ?: Props.empty( )
             )
         }
 

@@ -1,61 +1,89 @@
 package com.digia.digiaui.framework
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import com.digia.digiaui.framework.expr.ScopeContext
+import com.digia.digiaui.framework.expression.evaluate
 import com.digia.digiaui.framework.models.ExprOr
-import androidx.core.graphics.toColorInt
+import com.digia.digiaui.network.APIModel
+import defaultTextStyle
+import makeTextStyle
+import resourceApiModel
+import resourceColor
+import resourceFontFactory
 
-/**
- * Render payload - context passed during widget rendering Contains build context, scope, and
- * resource accessors
- */
 data class RenderPayload(
-        val context: Context,
-        val scopeContext: ScopeContext?,
-        val resources: UIResources
+    val scopeContext: ScopeContext?,
+    val widgetHierarchy: List<String> = emptyList(),
+    val currentEntityId: String? = null
 ) {
-    /** Evaluate an expression in the current scope */
-    inline fun <reified T : Any> evalExpr(expr: ExprOr<T>?): T? {
-        return expr?.evaluate(scopeContext)
+
+    /* ---------------- Expression evaluation ---------------- */
+
+    inline fun <reified T : Any> evalExpr(
+        expr: ExprOr<T>?,
+        noinline decoder: ((Any) -> T?)? = null
+    ): T? = expr?.evaluate(scopeContext, decoder)
+
+    inline fun <reified T : Any> eval(
+        expression: Any?,
+        scopeContext: ScopeContext? = null,
+        noinline decoder: ((Any?) -> T?)? = null
+    ): T? = evaluate(expression, chainExprContext(scopeContext), decoder)
+
+    /* ---------------- Hierarchy helpers ---------------- */
+
+    fun withExtendedHierarchy(widgetName: String): RenderPayload =
+        copy(widgetHierarchy = widgetHierarchy + widgetName)
+
+    fun forComponent(componentId: String): RenderPayload =
+        copy(
+            widgetHierarchy = widgetHierarchy + componentId,
+            currentEntityId = componentId
+        )
+
+    /* ---------------- Context chaining ---------------- */
+
+    fun chainExprContext(incoming: ScopeContext?): ScopeContext? {
+        if (incoming == null) return scopeContext
+        if (scopeContext == null) return incoming
+
+        incoming.enclosing = scopeContext
+        return incoming
     }
 
-    /** Get text style from token */
-    fun getTextStyle(token: String?): TextStyle? {
-        if (token == null) return null
-        // TODO: Implement text style lookup
-        return null
-    }
-
-    /** Get color from token */
-    fun getColor(token: String?): Color? {
-        if (token == null) return null
-        val colorValue = resources.colors?.get(token) ?: return null
-        val colorHex =
-                when (colorValue) {
-                    else -> colorValue.toString()
-                }
-        return parseColor(colorHex)
-    }
-
-    private fun parseColor(hex: String): Color {
-        val cleanHex = hex.removePrefix("#")
-        return when (cleanHex.length) {
-            6 -> Color("#$cleanHex".toColorInt())
-            8 -> Color("#$cleanHex".toColorInt())
-            else -> Color.Black
-        }
-    }
+    fun copyWithChainedContext(
+        scopeContext: ScopeContext,
+    ): RenderPayload =
+        copy(
+            scopeContext = chainExprContext(scopeContext)
+        )
 }
 
-/** Composition local for providing resources */
-val LocalUIResources = compositionLocalOf { UIResources() }
 
 @Composable
-fun ResourceProvider(resources: UIResources, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalUIResources provides resources) { content() }
-}
+fun RenderPayload.color(key: String): Color? =
+    resourceColor(key)
+
+@Composable
+fun RenderPayload.apiModel(id: String): APIModel? =
+    resourceApiModel(id)
+
+@Composable
+fun RenderPayload.fontFactory(): DUIFontFactory? =
+    resourceFontFactory()
+
+@Composable
+fun RenderPayload.textStyle(
+    token: Map<String, Any?>?,
+    fallback: TextStyle? = defaultTextStyle
+): TextStyle? =
+    makeTextStyle(token, { expr -> eval<String>(expr) }, fallback)
+
+@Composable
+fun RenderPayload.evalColor(
+    expression: Any?,
+    scopeContext: ScopeContext? = null
+): Color? =
+    eval<String>(expression, scopeContext)?.let { resourceColor(it) }

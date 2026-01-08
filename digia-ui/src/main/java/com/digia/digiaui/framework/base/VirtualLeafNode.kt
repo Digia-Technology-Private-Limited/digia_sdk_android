@@ -1,0 +1,43 @@
+package com.digia.digiaui.framework.base
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.digia.digiaui.framework.RenderPayload
+import com.digia.digiaui.framework.models.CommonProps
+import com.digia.digiaui.framework.models.Props
+import com.digia.digiaui.framework.utils.applyCommonProps
+
+abstract class VirtualLeafNode<T>(
+    val props: T,
+    val commonProps: CommonProps?,
+    parent: VirtualNode?,
+    refName: String?,
+    parentProps: Props? = null
+) : VirtualNode(refName, parent, parentProps) {
+
+    @Composable
+    override fun Render(payload: RenderPayload) {
+        // Extend hierarchy
+        val extendedPayload =
+            refName?.let { payload.withExtendedHierarchy(it) } ?: payload
+
+        // Visibility
+        val isVisible =
+            commonProps?.visibility?.let { extendedPayload.evalExpr(it) } ?: true
+
+        if (!isVisible) {
+            return
+        }
+
+      Render(extendedPayload)
+    }
+
+    @Composable
+    override fun Modifier.buildModifier(payload: RenderPayload): Modifier {
+        return this.applyCommonProps(payload, commonProps)
+    }
+}
+
+
+
+

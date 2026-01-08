@@ -1,5 +1,6 @@
 package com.digia.digiaui.framework
 
+import ResourceProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -11,6 +12,7 @@ import com.digia.digiaui.framework.models.ComponentDefinition
 import com.digia.digiaui.framework.models.PageDefinition
 import com.digia.digiaui.framework.page.ConfigProvider
 import com.digia.digiaui.framework.page.DUIConfigProvider
+import com.digia.digiaui.framework.page.DUIPage
 import com.digia.digiaui.framework.widgets.registerBuiltInWidgets
 import com.digia.digiaui.init.DigiaUIManager
 
@@ -161,31 +163,17 @@ class DUIFactory private constructor() {
             fontFactory = resources.fontFactory
         )
 
-        ResourceProvider(mergedResources) {
+        ResourceProvider(mergedResources, apiModels = configProvider.getAllApiModels()) {
             DUIPage(
                 pageId = pageId,
                 pageArgs = pageArgs,
                 pageDef = pageDef,
                 registry = widgetRegistry,
-                resources = mergedResources
+//                resources = mergedResources
             )
         }
     }
 
-    @Composable
-    @Suppress("UNUSED_PARAMETER")
-    private fun DUIPage(
-        pageId: String,
-        pageArgs: Map<String, Any?>?,
-        pageDef: PageDefinition,
-        registry: DefaultVirtualWidgetRegistry,
-        resources: UIResources
-    ) {
-        // TODO: Implement full DUIPage rendering
-        // This is a placeholder that should be replaced with the actual implementation
-        // including state management, lifecycle, and action execution
-        Logger.log("Rendering page: $pageId")
-    }
 
     /**
      * Creates the initial page from configuration.
