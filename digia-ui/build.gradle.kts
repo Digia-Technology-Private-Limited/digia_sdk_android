@@ -103,6 +103,9 @@ dependencies {
 
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-svg:2.6.0")
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
+    implementation("com.github.populov:compose-image-blurhash:1.0.2")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.compose.material3)
     implementation(libs.androidx.compose.foundation.layout)
