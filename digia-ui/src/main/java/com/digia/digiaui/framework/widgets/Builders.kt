@@ -45,6 +45,9 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     // Register Carousel widget
     register("digia/carousel", ::carouselBuilder)
 
+    // Register FutureBuilder widget
+    register("digia/futureBuilder", ::futureBuilderBuilder)
+
     // Register Scaffold widget (commented out for now)
     // register("digia/scaffold", ::scaffoldBuilder)
 }
