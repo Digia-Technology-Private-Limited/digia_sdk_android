@@ -34,4 +34,5 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/image", ::imageBuilder)
     register("digia/container", ::containerBuilder)
     register("digia/carousel", ::carouselBuilder)
+    register("digia/wrap", ::wrapBuilder)
 }
