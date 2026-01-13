@@ -1,8 +1,11 @@
 package com.digia.digiaui.framework.appstate
 
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 /**
@@ -13,40 +16,19 @@ open class ReactiveValue<T>(
     val streamName: String
 ) {
 
-    /** The current value */
-    private var _value: T = initialValue
+    private val _state = MutableStateFlow(initialValue)
 
+    val flow: StateFlow<T> = _state.asStateFlow()
 
-
-    /** Internal flow for value changes (broadcast) */
-    private val _flow = MutableSharedFlow<T>(
-        replay = 1,               // last value available to new collectors
-        extraBufferCapacity = 1
-    )
-
-    /** Public read-only flow */
-    val flow: SharedFlow<T> = _flow.asSharedFlow()
-
-    init {
-        // Emit initial value (like StreamController initial state)
-        _flow.tryEmit(_value)
-    }
-
-    /** Get the current value */
     val value: T
-        get() = _value
+        get() = _state.value
 
-    /**
-     * Update the value and notify listeners
-     * Returns true if the value was actually changed
-     */
     open fun update(newValue: T): Boolean {
-        if (_value != newValue) {
-            _value = newValue
-            _flow.tryEmit(_value)
-            return true
+        return if (_state.value != newValue) {
+            _state.value = newValue
+            true
+        } else {
+            false
         }
-        return false
     }
-
 }

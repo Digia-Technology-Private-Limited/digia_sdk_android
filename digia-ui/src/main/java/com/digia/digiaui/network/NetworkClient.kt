@@ -141,7 +141,7 @@ class NetworkClient(
             additionalHeaders: Map<String, String>? = null,
             data: Any? = null,
             apiName: String? = null
-    ): ApiResponse<Map<String, Any>> {
+    ): ApiResponse<Any> {
         return try {
             val response = requestProjectRaw(bodyType, url, method, additionalHeaders, data, apiName)
             convertToApiResponse(response)
@@ -244,7 +244,7 @@ class NetworkClient(
 
     private fun convertToApiResponse(
         response: OkHttpResponse
-    ): ApiResponse<Map<String, Any>> {
+    ): ApiResponse<Any> {
         val body = response.body?.string()
         val parsedData = if (body != null && body.isNotEmpty()) {
             try {
@@ -358,7 +358,7 @@ class NetworkClient(
             data: Any? = null,
             uploadProgress: ((Long, Long) -> Unit)? = null,
             apiName: String? = null
-    ): ApiResponse<Map<String, Any>> {
+    ): ApiResponse<Any> {
         return withContext(Dispatchers.IO) {
             try {
                 // Remove connection timeout for large file uploads

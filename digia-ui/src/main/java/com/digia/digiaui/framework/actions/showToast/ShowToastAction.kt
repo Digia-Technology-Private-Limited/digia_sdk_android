@@ -5,9 +5,11 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Snackbar
@@ -127,18 +129,21 @@ class ShowToastProcessor : ActionProcessor<ShowToastAction>() {
                 visuals = DUIToastVisuals(
                     messageText = message,
                     bgColor = bgColor,
-                    textStyleJson = textStyle,
+                    textStyle = TextStyle(color = Color.White),
                     shape = borderRadius,
                     padding = padding,
+                    margin = margin,
+                    width = width,
+                    height = height,
+                    alignment = alignment,
                     duration =
-                    if (duration <= 0) SnackbarDuration.Indefinite
-                    else SnackbarDuration.Short,
+                        if (duration <= 0) SnackbarDuration.Indefinite
+                        else SnackbarDuration.Short,
                     scopeContext = scopeContext,
                     resourceProvider = resourceProvider
                 ),
                 autoDismissMs =
-                if (duration <= 0) null
-                else duration * 1000L
+                    if (duration <= 0) null else duration * 1000L
             )
         }
 
@@ -182,61 +187,73 @@ object DUISnackbarManager {
     }
 }
 
-
 data class DUIToastVisuals(
     val messageText: String,
     val bgColor: Color,
-    val textStyleJson: Map<String, Any?>?,
+    val textStyle: TextStyle,
     val shape: Shape,
     val padding: PaddingValues,
+
+    // 🔥 NEW (now actually used)
+    val margin: PaddingValues? = null,
+    val width: Dp? = null,
+    val height: Dp? = null,
+    val alignment: Alignment? = Alignment.BottomCenter,
+
     override val duration: SnackbarDuration = SnackbarDuration.Indefinite,
     val scopeContext: ScopeContext?,
     val resourceProvider: UIResources?,
 ) : SnackbarVisuals {
 
-    override val message: String
-        get() = messageText
-
+    override val message: String get() = messageText
     override val actionLabel: String? = null
     override val withDismissAction: Boolean = false
 }
 
 
+
+
 @Composable
 fun DUISnackbarHost() {
     SnackbarHost(
-        hostState = DUISnackbarManager.hostState
+        hostState = DUISnackbarManager.hostState,
+        modifier = Modifier.fillMaxSize()
     ) { snackbarData ->
 
         val visuals = snackbarData.visuals as? DUIToastVisuals
 
         if (visuals != null) {
+
             Box(
                 modifier = Modifier
-                    .padding(16.dp),
+                    .fillMaxSize()
+                    .padding(visuals.margin ?: PaddingValues(16.dp)),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Surface(
                     color = visuals.bgColor,
                     shape = visuals.shape,
-                    shadowElevation = 6.dp
+                    shadowElevation = 6.dp,
+                    modifier = Modifier
+                        .then(
+                            if (visuals.width != null || visuals.height != null) {
+                                Modifier.size(
+                                    width = visuals.width ?: Dp.Unspecified,
+                                    height = visuals.height ?: Dp.Unspecified
+                                )
+                            } else Modifier
+                        )
                 ) {
                     Text(
                         text = visuals.messageText,
-                        style = makeTextStyle(
-                            json = visuals.textStyleJson ,
-                            eval = { expr -> ExprOr.fromJson<String>(expr)?.evaluate(visuals.scopeContext) },
-                            fallback = TextStyle(color = Color.White),
-                            resources = visuals.resourceProvider,
-                            useLocalResources = false
-                        ) ?: TextStyle(color = Color.White),
-                        modifier = Modifier.padding(visuals.padding)
+                        style = visuals.textStyle,
+                        modifier = Modifier.align(alignment = visuals.alignment ?: Alignment.Center).padding(visuals.padding)
                     )
                 }
             }
+
         } else {
             Snackbar(snackbarData)
         }
     }
 }
-

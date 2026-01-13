@@ -73,6 +73,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation(libs.lottie.compose)
 
 
     implementation(
@@ -113,6 +114,10 @@ dependencies {
     implementation(libs.androidx.compose.animation.core)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui.compose)
+    implementation(libs.androidx.media3.ui.compose.material3)
+    implementation(libs.androidx.media3.ui)
 //    implementation(libs.androidx.navigation.runtime.ktx)
 
 

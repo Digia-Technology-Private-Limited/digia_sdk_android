@@ -21,7 +21,7 @@ suspend fun executeApiAction(
     onSuccess: suspend (JsonLike) -> Unit = {},
     onError: suspend (JsonLike) -> Unit = {},
     progressCallback: ((com.digia.digiaui.network.UploadProgress) -> Unit)? = null
-): ApiResponse<Map<String, Any>> {
+): ApiResponse<Any> {
     // Evaluate all arguments
     val evaluatedArgs = apiModel.variables?.mapValues { (key, variable) ->
         args?.get(key)?.evaluate(scopeContext) ?: variable.defaultValue

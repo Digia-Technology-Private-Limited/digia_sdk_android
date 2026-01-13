@@ -14,6 +14,20 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     // Register list widget
     register("digia/listView", ::listViewBuilder)
 
+    register("digia/streamBuilder", ::streamBuilderBuilder)
+
+    register("digia/conditionalBuilder", ::conditionalBuilder)
+    register("digia/conditionalItem", ::conditionalItemBuilder)
+
     // Register Scaffold widget (commented out for now)
-    // register("digia/scaffold", ::scaffoldBuilder)
+     register("fw/scaffold", ::scaffoldBuilder)
+    // Register AppBar widget
+     register("digia/appBar", ::appBarBuilder)
+    register("fw/appBar", ::appBarBuilder)
+    register("digia/circularProgressBar", ::circularProgressBarBuilder)
+    register("digia/futureBuilder", ::futureBuilder)
+    register("digia/lottie", ::lottieBuilder)
+    register("digia/linearProgressBar", ::linearProgressBarBuilder)
+    register("digia/textFormField", ::textFormFieldBuilder)
+    register("digia/videoPlayer", ::videoPlayerBuilder)
 }

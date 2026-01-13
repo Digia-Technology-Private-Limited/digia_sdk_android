@@ -38,10 +38,10 @@ fun makeTextStyle(
 ): TextStyle? {
     if (json == null) return fallback
 
-    val textColor = evalColor(json["textColor"], eval)
+    val textColor = evalColor(json["textColor"], eval, useLocalResources, resources)
     val textBgColor = evalColor(
         tryKeys<String>(json as JsonLike, listOf("textBackgroundColor", "textBgColor")),
-        eval
+        eval, useLocalResources, resources
     )
     val textDecoration = toTextDecoration(json["textDecoration"])
 
@@ -144,8 +144,8 @@ fun makeTextStyle(
  * --------------------------------------------------------- */
 
 @Composable
-private fun evalColor(expr: Any?, eval: (Any?) -> String?): Color? {
-    return eval(expr)?.let { resourceColor(it) }
+private fun evalColor(expr: Any?, eval: (Any?) -> String?, useLocalResources: Boolean = true,resources: UIResources?= null): Color? {
+    return eval(expr)?.let { if (useLocalResources) resourceColor(it) else resources?.colors?.get(it) }
 }
 
 /* ---------------------------------------------------------

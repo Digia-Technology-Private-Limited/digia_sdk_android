@@ -13,12 +13,12 @@ import com.digia.digiaui.framework.models.ExprOr
 import com.digia.digiaui.framework.state.StateContext
 import com.digia.digiaui.framework.utils.JsonLike
 
+
+
 /**
  * SetAppState Action
  *
  * Updates global application state.
- * Unlike SetState which works on page-scoped state, this updates app-level state.
- *
  * @param updates Map of state variable names to their new values (can be expressions)
  */
 data class SetAppStateAction(
@@ -37,14 +37,17 @@ data class SetAppStateAction(
 
     companion object {
         fun fromJson(json: JsonLike): SetAppStateAction? {
-            val updatesJson = json["updates"] as? Map<*, *> ?: return null
 
-            val updates = updatesJson.mapNotNull { (key, value) ->
-                val keyStr = key as? String ?: return@mapNotNull null
-                keyStr to ExprOr.fromValue<Any>(value)
+            val updatesList = json["updates"] as? List<*> ?: return null
+
+            val updatesMap = updatesList.mapNotNull { update ->
+                val map = update as? Map<*, *> ?: return@mapNotNull null
+                val key = (map["stateName"] ?: map["key"]) as? String ?: return@mapNotNull null
+                val value = (map["newValue"] ?: map["value"])?.let { ExprOr.fromValue<Any>(it) }
+                key to value
             }.toMap()
 
-            return SetAppStateAction(updates = updates)
+            return SetAppStateAction(updates = updatesMap)
         }
     }
 }
@@ -61,17 +64,19 @@ class SetAppStateProcessor : ActionProcessor<SetAppStateAction>() {
         resourceProvider: UIResources?,
         id: String
     ): Any? {
-         try {
-             for (update in action.updates) {
-                 val key = update.key
-                 val value = update.value?.evaluate<Any>(scopeContext)
-                 DUIAppState.instance.update(key, value)
-                 println("SetAppStateAction: Set $key = $value")
-             }
-                return true
-         } catch(e: Exception) {
-             return false
-         }
+        try {
+            for ((key, exprOrValue) in action.updates) {
+                // Evaluate the expression to get the actual value
+                val value = exprOrValue?.evaluate<Any>(scopeContext)
+
+                // Update the global DUIAppState singleton
+                DUIAppState.instance.update(key, value)
+                println("SetAppStateAction: Set $key = $value")
+            }
+            return true
+        } catch(e: Exception) {
+            println("Error executing SetAppStateAction: ${e.message}")
+            return false
+        }
     }
 }
-
