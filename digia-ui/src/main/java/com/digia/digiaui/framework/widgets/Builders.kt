@@ -36,4 +36,5 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/carousel", ::carouselBuilder)
     register("digia/wrap", ::wrapBuilder)
     register("digia/stack", ::stackBuilder)
+    register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
 }
