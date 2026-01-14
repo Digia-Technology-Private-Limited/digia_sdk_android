@@ -172,8 +172,8 @@ class VWFlex(
                     // Inside RowScope - Modifier.weight() is available
                     children.forEach { child ->
                         val parentProps = child.parentProps
-                        val flexFit = parentProps?.getString("flexFit")
-                        val flexValue = parentProps?.getDouble("flex") ?: 1.0
+                        val flexFit = parentProps?.getString("expansion.type")
+                        val flexValue = parentProps?.getDouble("expansion.flexValue") ?: 1.0
 
                         if (flexFit != null) {
                             val fillMaxSize = when (flexFit.lowercase()) {

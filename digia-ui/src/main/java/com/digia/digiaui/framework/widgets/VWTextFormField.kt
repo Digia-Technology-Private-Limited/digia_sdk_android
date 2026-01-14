@@ -808,7 +808,12 @@ fun InternalTextFormField(
         vertical = 14.dp
     )
 
-    Column {
+    Column(
+                 modifier = Modifier
+                .fillMaxWidth().height(80.dp)
+               .focusRequester(focusRequester),
+    ) {
+
 //        TextFieldDecoration(
 //            modifier = Modifier
 //                .fillMaxWidth()
@@ -847,68 +852,7 @@ fun InternalTextFormField(
                     if (obscureText) PasswordVisualTransformation()
                     else VisualTransformation.None,
                 decorationBox = { inner ->
-                    CommonDecorationBox(
-                        value = controller.text,
-                        innerTextField = inner,
-                        enabled = enabled,
-                        singleLine = (maxLines ?: 1) == 1,
-                        isError = errorText != null,
-                        visualTransformation =
-                            if (obscureText) PasswordVisualTransformation()
-                            else VisualTransformation.None,
-                        interactionSource = interactionSource,
-                        contentPadding = padding,
-                        leadingIcon = prefixWidget,
-                        trailingIcon = suffixWidget,
-                        placeholder = if (controller.text.isEmpty() && hintText != null) {
-                            {
-                                Text(
-                                    hintText,
-                                    style = hintStyle
-                                )
-                            }
-                        } else null,
-                        label = {
-                            if (labelText != null) {
-                                Text(
-                                    labelText,
-                                    style = labelStyle
-                                )
-                            }
-                        },
-                        prefix = {
-                            if (prefixWidget != null) {
-                                prefixWidget()
-                            }
-                        },
-                        suffix = {
-                            if (suffixWidget != null) {
-                                suffixWidget()
-                            }
-                        },
-
-                        container = {
-                            TextFieldContainer(
-                                enabled = enabled,
-interactionSource= interactionSource,
-                                focusedBorder = VWInputBorder.Underline(
-                                    strokeWidth = 2.dp,
-                                    dashed = false
-                                ),
-                                disabledBorder = VWInputBorder.Underline(
-                                    strokeWidth = 1.dp,
-                                    dashed = false
-                                ),
-                                focusedErrorBorder = VWInputBorder.Underline(
-                                    strokeWidth = 2.dp,),
-                                enabledBorder = enabledBorder,
-                                errorBorder = errorBorder,
-                                isError = false,
-                            )
-                        },
-
-                    )
-//                    OutlinedTextFieldDefaults.DecorationBox(
+//                    CommonDecorationBox(
 //                        value = controller.text,
 //                        innerTextField = inner,
 //                        enabled = enabled,
@@ -929,15 +873,76 @@ interactionSource= interactionSource,
 //                                )
 //                            }
 //                        } else null,
-//                        label = if (labelText != null) {
-//                            {
+//                        label = {
+//                            if (labelText != null) {
 //                                Text(
 //                                    labelText,
 //                                    style = labelStyle
 //                                )
 //                            }
-//                        } else null
+//                        },
+//                        prefix = {
+//                            if (prefixWidget != null) {
+//                                prefixWidget()
+//                            }
+//                        },
+//                        suffix = {
+//                            if (suffixWidget != null) {
+//                                suffixWidget()
+//                            }
+//                        },
+//
+//                        container = {
+//                            TextFieldContainer(
+//                                enabled = enabled,
+//interactionSource= interactionSource,
+//                                focusedBorder = VWInputBorder.Underline(
+//                                    strokeWidth = 2.dp,
+//                                    dashed = false
+//                                ),
+//                                disabledBorder = VWInputBorder.Underline(
+//                                    strokeWidth = 1.dp,
+//                                    dashed = false
+//                                ),
+//                                focusedErrorBorder = VWInputBorder.Underline(
+//                                    strokeWidth = 2.dp,),
+//                                enabledBorder = enabledBorder,
+//                                errorBorder = errorBorder,
+//                                isError = false,
+//                            )
+//                        },
+//
 //                    )
+                    OutlinedTextFieldDefaults.DecorationBox(
+                        value = controller.text,
+                        innerTextField = inner,
+                        enabled = enabled,
+                        singleLine = (maxLines ?: 1) == 1,
+                        isError = errorText != null,
+                        visualTransformation =
+                            if (obscureText) PasswordVisualTransformation()
+                            else VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        contentPadding = padding,
+                        leadingIcon = prefixWidget,
+                        trailingIcon = suffixWidget,
+                        placeholder = if (controller.text.isEmpty() && hintText != null) {
+                            {
+                                Text(
+                                    hintText,
+                                    style = hintStyle
+                                )
+                            }
+                        } else null,
+                        label = if (labelText != null) {
+                            {
+                                Text(
+                                    labelText,
+                                    style = labelStyle
+                                )
+                            }
+                        } else null
+                    )
 //                    Row(verticalAlignment = Alignment.CenterVertically) {
 //                        prefixWidget?.invoke()
 //                        Box(Modifier.weight(1f)) {

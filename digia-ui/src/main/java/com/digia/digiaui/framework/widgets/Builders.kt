@@ -49,7 +49,7 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/wrap", ::wrapBuilder)
 
     register("digia/stack", ::stackBuilder)
-    register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
+   register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
 
     register("fw/sizedBox",::sizedBoxBuilder)
     register("fw/sized_box",::sizedBoxBuilder)
