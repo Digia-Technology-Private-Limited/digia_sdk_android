@@ -1,6 +1,8 @@
 package com.digia.digiaui.framework.widgets
 
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -56,7 +58,7 @@ class VWText(
     @Composable
     override fun Render(payload: RenderPayload) {
         // Evaluate expressions
-        val text = payload.evalObserve(props.text) ?: ""
+        val text = payload.evalExpr(props.text) ?: ""
         val style = payload.textStyle(props.textStyle)
         val maxLines = payload.evalExpr(props.maxLines)
         val alignmentStr = payload.evalExpr(props.alignment)
@@ -81,6 +83,8 @@ class VWText(
                     "visible" -> TextOverflow.Visible
                     else -> TextOverflow.Clip
                 }
+
+
 
         // Render Material3 Text
         Text(

@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -62,72 +63,70 @@ class VWVideoPlayer(
     refName = refName,
     parentProps = parentProps
 ) {
-
     @Composable
     override fun Render(payload: RenderPayload) {
-        // Resolve videoUrl via expressions
-        val videoUrl: String? = payload.evalExpr(props.videoUrl)
+        val videoUrl = payload.evalExpr(props.videoUrl)
         if (videoUrl.isNullOrBlank()) {
             Empty()
             return
         }
 
-        val showControls: Boolean = payload.evalExpr(props.showControls) ?: true
-        val aspectRatio: Double = payload.evalExpr(props.aspectRatio) ?: (16.0 / 9.0)
-        val autoPlay: Boolean = payload.evalExpr(props.autoPlay) ?: false
-        val looping: Boolean = payload.evalExpr(props.looping) ?: false
+        val showControls = payload.evalExpr(props.showControls) ?: true
+        val aspectRatio = payload.evalExpr(props.aspectRatio) ?: (16.0 / 9.0)
+        val autoPlay = payload.evalExpr(props.autoPlay) ?: false
+        val looping = payload.evalExpr(props.looping) ?: false
 
         val context = LocalContext.current
 
-        // Remember and configure Media3 ExoPlayer for this videoUrl
-        val exoPlayer = remember(videoUrl, autoPlay, looping) {
+        val exoPlayer = remember(videoUrl) {
             ExoPlayer.Builder(context).build().apply {
-                val mediaItem = MediaItem.fromUri(videoUrl)
-                setMediaItem(mediaItem)
-                repeatMode = if (looping) {
-                    Player.REPEAT_MODE_ALL
-                } else {
-                    Player.REPEAT_MODE_OFF
-                }
-                playWhenReady = autoPlay
+                setMediaItem(MediaItem.fromUri(videoUrl))
+                repeatMode =
+                    if (looping) Player.REPEAT_MODE_ALL
+                    else Player.REPEAT_MODE_OFF
                 prepare()
             }
         }
 
-        // Release when leaving composition
-        DisposableEffect(exoPlayer) {
+        // 🔑 CONTROL PLAYBACK EXPLICITLY
+        LaunchedEffect(autoPlay) {
+            if (autoPlay) {
+                exoPlayer.play()
+            } else {
+                exoPlayer.pause()
+            }
+        }
+
+        DisposableEffect(Unit) {
             onDispose {
                 exoPlayer.release()
             }
         }
 
-        // Apply common Digia modifiers (padding, size, etc.), same pattern as VWLottie
-        var modifier: Modifier = Modifier.buildModifier(payload)
-        if (aspectRatio > 0.0) {
+        var modifier = Modifier.buildModifier(payload)
+        if (aspectRatio > 0) {
             modifier = modifier.aspectRatio(aspectRatio.toFloat())
         }
 
-
-
         AndroidView(
             modifier = modifier,
-            factory = { ctx: Context ->
+            factory = { ctx ->
                 PlayerView(ctx).apply {
-                    layoutParams = FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
                     useController = showControls
                     player = exoPlayer
                 }
             },
-            update = { playerView: PlayerView ->
-                playerView.useController = showControls
-                playerView.player = exoPlayer
+            update = { view ->
+                view.useController = showControls
+                view.player = exoPlayer
             }
         )
     }
+
 }
+
+
+
 
 fun videoPlayerBuilder(
     data: VWNodeData,
