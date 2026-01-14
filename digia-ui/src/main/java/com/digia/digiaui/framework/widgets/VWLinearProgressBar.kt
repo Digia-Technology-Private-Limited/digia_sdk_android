@@ -43,13 +43,11 @@ class VWLinearProgressBar(
 
     @Composable
     override fun Render(payload: RenderPayload) {
-
         val progressValue = payload.eval<Double>(props.get("progressValue"))
         val isReverse = payload.eval<Boolean>(props.get("isReverse")) ?: false
         val type = props.getString("type") ?: "indeterminate"
 
-        val rotationModifier =
-            if (isReverse) Modifier.rotate(180f) else Modifier
+        val rotationModifier = if (isReverse) Modifier.rotate(180f) else Modifier
 
         Box(modifier = rotationModifier) {
             ProgressContent(
@@ -66,15 +64,13 @@ class VWLinearProgressBar(
         type: String,
         payload: RenderPayload
     ) {
-
         val width = props.getDouble("width")?.dp
-        val height = (props.getDouble("thickness") ?: 4.0).dp
+        val defaultThickness = if (type == "indeterminate") 4.0 else 5.0
+        val height = (props.getDouble("thickness") ?: defaultThickness).dp
         val radius = (props.getDouble("borderRadius") ?: 0.0).dp
 
-        val indicatorColor =
-            payload.evalColor(props.get("indicatorColor")) ?: Color.Blue
-        val bgColor =
-            payload.evalColor(props.get("bgColor")) ?: Color.Transparent
+        val indicatorColor = payload.evalColor(props.get("indicatorColor")) ?: Color.Blue
+        val bgColor = payload.evalColor(props.get("bgColor")) ?: Color.Transparent
 
         val animationEnabled = props.getBool("animation") ?: false
 
@@ -84,7 +80,6 @@ class VWLinearProgressBar(
             .clip(RoundedCornerShape(radius))
 
         if (type == "indeterminate") {
-
             LinearProgressIndicator(
                 modifier = modifier,
                 color = indicatorColor,
@@ -92,49 +87,39 @@ class VWLinearProgressBar(
                 strokeCap = StrokeCap.Butt,
                 gapSize = 0.dp
             )
-
         } else {
-
-            val targetProgress =
-                ((progressValue ?: 0.0) / 100f).toFloat().coerceIn(0f, 1f)
+            val targetProgress = ((progressValue ?: 0.0) / 100f).toFloat().coerceIn(0f, 1f)
 
             val animatedProgress by animateFloatAsState(
                 targetValue = targetProgress,
-                animationSpec = if (animationEnabled)
+                animationSpec = if (animationEnabled) {
                     tween(durationMillis = 500)
-                else
-                    snap(),
+                } else {
+                    snap()
+                },
                 label = "LinearProgress"
             )
 
             LinearProgressIndicator(
-            progress = { animatedProgress },
-            modifier = modifier,
-            color = indicatorColor,
-            trackColor = bgColor,
-                gapSize = 0.dp
-,
-                        strokeCap = StrokeCap.Butt,
-                drawStopIndicator = {
-                    false
-                }
+                progress = { animatedProgress },
+                modifier = modifier,
+                color = indicatorColor,
+                trackColor = bgColor,
+                gapSize = 0.dp,
+                strokeCap = StrokeCap.Butt,
+                drawStopIndicator = { false }
             )
         }
     }
 }
 
-
-
-
-/** Builder function for ConditionalItem widget */
-fun linearProgressBarBuilder(data: VWNodeData, parent: VirtualNode?,registry: VirtualWidgetRegistry): VirtualNode {
-
+/** Builder function for LinearProgressBar widget */
+fun linearProgressBarBuilder(data: VWNodeData, parent: VirtualNode?, registry: VirtualWidgetRegistry): VirtualNode {
     return VWLinearProgressBar(
         refName = data.refName,
         commonProps = data.commonProps,
-        parent= parent,
+        parent = parent,
         parentProps = data.parentProps,
         props = data.props,
     )
-
 }

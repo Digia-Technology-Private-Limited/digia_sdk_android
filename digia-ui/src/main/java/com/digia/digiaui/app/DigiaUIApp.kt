@@ -86,7 +86,6 @@ fun DigiaUIApp(
         )
 
         DUIFactory.getInstance().initialize(
-            config = digiaUI.dslConfig,
             pageConfigFetcher = pageConfigFetcher,
             icons = icons ,
             images = images ,

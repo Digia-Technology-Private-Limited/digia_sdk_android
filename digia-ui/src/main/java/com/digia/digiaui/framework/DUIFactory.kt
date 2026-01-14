@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import asSafe
 import com.digia.digiaui.config.model.DUIConfig
 import com.digia.digiaui.framework.actions.ActionExecutor
 import com.digia.digiaui.framework.actions.ActionProvider
@@ -15,8 +16,10 @@ import com.digia.digiaui.framework.models.PageDefinition
 import com.digia.digiaui.framework.page.ConfigProvider
 import com.digia.digiaui.framework.page.DUIConfigProvider
 import com.digia.digiaui.framework.page.DUIPage
+import com.digia.digiaui.framework.utils.asSafe
 import com.digia.digiaui.framework.widgets.registerBuiltInWidgets
 import com.digia.digiaui.init.DigiaUIManager
+import convertToTextStyle
 
 /**
  * Central factory class for creating Digia UI widgets, pages, and components.
@@ -74,13 +77,9 @@ class DUIFactory private constructor() {
      * Note: Environment variables should be set using the DUIConfig or DigiaUIManager directly
      */
     fun initialize(
-        config: DUIConfig,
         pageConfigFetcher: ConfigProvider? = null,
         icons: Map<String, ImageVector>? = null,
         images: Map<String, ImageBitmap>? = null,
-        textStyles: Map<String, TextStyle>? = null,
-        colors: Map<String, Color>? = null,
-        darkColors: Map<String, Color>? = null,
         fontFactory: DUIFontFactory? = null
     ) {
         if (isInitialized) {
@@ -98,15 +97,17 @@ class DUIFactory private constructor() {
         }
 
         // Initialize configuration provider with custom provider or default
-        configProvider = pageConfigFetcher ?: DUIConfigProvider(config)
+        configProvider = pageConfigFetcher ?: DUIConfigProvider(digiaUIInstance.dslConfig)
 
         // Create UI resources from config and custom overrides
         resources = UIResources(
             icons = icons,
             images = images,
-            textStyles = textStyles,
-            colors = colors,
-            darkColors = darkColors,
+            textStyles =  digiaUIInstance.dslConfig.fontTokens
+                .mapValues { convertToTextStyle(it.value,fontFactory) }
+         ,
+            colors = digiaUIInstance.dslConfig.colorTokens.mapValues { it -> asSafe<String>(it.value)?.let { ColorUtil.fromString(it) }  },
+            darkColors = digiaUIInstance.dslConfig.darkColorTokens.mapValues { it -> asSafe<String>(it.value)?.let { ColorUtil.fromString(it) }  },
             fontFactory = fontFactory
         )
 
