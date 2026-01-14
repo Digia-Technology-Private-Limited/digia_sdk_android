@@ -135,6 +135,21 @@ class VWStyledHorizontalDivider(
             LinePattern.SOLID -> null
         }
 
+        // Pre-evaluate gradient colors BEFORE entering Canvas (since evalColor is @Composable)
+        val gradientColors: List<Color>? = props.gradient?.colorList?.mapNotNull { 
+            payload.evalColor(it.color) 
+        }?.takeIf { it.isNotEmpty() }
+        
+        val gradientStops: List<Float>? = props.gradient?.colorList?.mapNotNull { 
+            it.stop?.toFloat() 
+        }
+        
+        val gradientType = props.gradient?.type
+        val gradientBegin = props.gradient?.begin
+        val gradientEnd = props.gradient?.end
+        val gradientCenter = props.gradient?.center
+        val gradientRadius = props.gradient?.radius
+
         // Render divider - matching Flutter's structure:
         // Padding(indent) -> SizedBox(height: size) -> Center -> CustomPaint(size: Size(infinity, thickness))
         Box(
@@ -155,13 +170,19 @@ class VWStyledHorizontalDivider(
                 // Since our canvas height = thickness, the line is drawn at y = thickness/2
                 val y = size.height / 2f
                 
-                // Evaluate gradient inside Canvas to get correct size for shader
-                val gradientBrush = props.gradient?.let { gradientProps ->
-                    // Create gradient brush with actual canvas size
-                    // This matches Flutter's: paint.shader = gradient.createShader(rect)
-                    // where rect = Offset.zero & size (the full canvas rect)
-                    createGradientBrush(gradientProps, payload, size)
-                }
+                // Create gradient brush using pre-evaluated colors
+                val gradientBrush = if (gradientColors != null && gradientColors.isNotEmpty()) {
+                    createGradientBrush(
+                            gradientType,
+                            gradientColors,
+                            gradientStops,
+                            gradientBegin,
+                            gradientEnd,
+                            gradientCenter,
+                            gradientRadius,
+                            size
+                    )
+                } else null
 
                 // Draw line with gradient or solid color
                 if (gradientBrush != null) {
@@ -191,31 +212,30 @@ class VWStyledHorizontalDivider(
      * Creates a gradient brush with proper size-aware offsets
      * Matches Flutter's gradient.createShader(rect) behavior
      */
-    @Composable
     private fun createGradientBrush(
-            gradientProps: GradientProps,
-            payload: RenderPayload,
+            type: String?,
+            colors: List<Color>,
+            stops: List<Float>?,
+            begin: String?,
+            end: String?,
+            center: String?,
+            radius: Double?,
             canvasSize: Size
     ): Brush? {
-        val colorStops = gradientProps.colorList ?: return null
-        if (colorStops.isEmpty()) return null
-
-        val colors = colorStops.mapNotNull { payload.evalColor(it.color) }
         if (colors.isEmpty()) return null
 
-        val stops = colorStops.mapNotNull { it.stop?.toFloat() }
-        val hasValidStops = stops.size == colors.size
+        val hasValidStops = stops != null && stops.size == colors.size
 
-        return when (gradientProps.type) {
+        return when (type) {
             "linear" -> {
                 // Convert alignment strings to actual pixel offsets based on canvas size
                 // Flutter uses Alignment which maps -1..1 to 0..size
-                val startOffset = alignmentToOffset(gradientProps.begin, canvasSize, isEnd = false)
-                val endOffset = alignmentToOffset(gradientProps.end, canvasSize, isEnd = true)
+                val startOffset = alignmentToOffset(begin, canvasSize, isEnd = false)
+                val endOffset = alignmentToOffset(end, canvasSize, isEnd = true)
 
                 if (hasValidStops) {
                     Brush.linearGradient(
-                            colorStops = stops.zip(colors).toTypedArray(),
+                            colorStops = stops!!.zip(colors).toTypedArray(),
                             start = startOffset,
                             end = endOffset
                     )
@@ -228,12 +248,12 @@ class VWStyledHorizontalDivider(
                 }
             }
             "angular" -> {
-                val centerOffset = alignmentToOffset(gradientProps.center, canvasSize)
-                val radiusValue = ((gradientProps.radius ?: 0.5) * minOf(canvasSize.width, canvasSize.height)).toFloat()
+                val centerOffset = alignmentToOffset(center, canvasSize)
+                val radiusValue = ((radius ?: 0.5) * minOf(canvasSize.width, canvasSize.height)).toFloat()
 
                 if (hasValidStops) {
                     Brush.radialGradient(
-                            colorStops = stops.zip(colors).toTypedArray(),
+                            colorStops = stops!!.zip(colors).toTypedArray(),
                             center = centerOffset,
                             radius = radiusValue
                     )
