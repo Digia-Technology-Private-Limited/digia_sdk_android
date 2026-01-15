@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.digia"
-version = "1.0.0"
+version = "1.0.0-beta.1"
 
 android {
     namespace = "com.digia.digiaui"
@@ -59,6 +59,12 @@ android {
             res.srcDirs("src/main/res")
             assets.srcDirs("src/main/assets")
             manifest.srcFile("src/main/AndroidManifest.xml")
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
         }
     }
 }
@@ -139,7 +145,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.digia"
                 artifactId = "digia-ui"
-                version = "1.0.0"
+version = "1.0.0-beta.1"
 
                 pom {
                     name.set("Digia UI Compose")
