@@ -78,12 +78,8 @@ class VWExpandable(
         val borderRadius = ToUtils.borderRadius(expandableProps.borderRadius ?: 0)
 
         // Alignment
-        val headerAlignment =
-                when (expandableProps.headerAlignment) {
-                    "top" -> Alignment.Top
-                    "bottom" -> Alignment.Bottom
-                    else -> Alignment.CenterVertically
-                }
+        val headerAlignment = expandableProps.headerAlignment.toAlignment(Alignment.CenterStart)
+        val bodyAlignment = expandableProps.bodyAlignment.toHorizontalAlignment()
 
         // Icon logic
         val iconProps = expandableProps.icon
@@ -124,7 +120,7 @@ class VWExpandable(
                                     } else Modifier
                             )
 
-            Row(modifier = headerModifier, verticalAlignment = headerAlignment) {
+            Row(modifier = headerModifier, verticalAlignment = Alignment.CenterVertically) {
                 // Icon Left
                 if (hasIcon && iconPlacement == "left") {
                     Box(modifier = Modifier.padding(iconPadding)) {
@@ -133,7 +129,7 @@ class VWExpandable(
                 }
 
                 // Actual Header
-                Box(modifier = Modifier.weight(1f)) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = headerAlignment) {
                     if (headerNodes.isNullOrEmpty()) {
                         // No header content?
                     } else {
@@ -159,7 +155,7 @@ class VWExpandable(
                             shrinkVertically(tween(animationDuration)) +
                                     fadeOut(tween(animationDuration))
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = bodyAlignment) {
                     expandedNodes?.forEach { it.ToWidget(payload) }
                 }
             }
@@ -168,9 +164,10 @@ class VWExpandable(
             // Shown when NOT expanded
             if (!isExpanded) {
                 if (!collapsedNodes.isNullOrEmpty()) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        collapsedNodes.forEach { it.ToWidget(payload) }
-                    }
+                    Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = bodyAlignment
+                    ) { collapsedNodes.forEach { it.ToWidget(payload) } }
                 }
             }
         }
@@ -327,5 +324,14 @@ private fun String?.toAlignment(default: Alignment = Alignment.Center): Alignmen
             "bottomLeft", "bottomStart" -> Alignment.BottomStart
             "bottomCenter" -> Alignment.BottomCenter
             "bottomRight", "bottomEnd" -> Alignment.BottomEnd
+            else -> default
+        }
+
+private fun String?.toHorizontalAlignment(
+        default: Alignment.Horizontal = Alignment.Start
+): Alignment.Horizontal =
+        when (this) {
+            "center" -> Alignment.CenterHorizontally
+            "right", "end" -> Alignment.End
             else -> default
         }

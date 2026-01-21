@@ -11,6 +11,7 @@ import com.digia.digiaui.framework.base.VirtualNode
 import com.digia.digiaui.framework.models.CommonProps
 import com.digia.digiaui.framework.models.Props
 import com.digia.digiaui.framework.models.VWNodeData
+import com.digia.digiaui.framework.widgets.expandableBuilder
 
 /** Register all built-in widgets with the registry */
 fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
@@ -47,8 +48,6 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/carousel", ::carouselBuilder)
         register("digia/wrap", ::wrapBuilder)
         register("digia/opacity", ::opacityBuilder)
-        register("opacity", ::opacityBuilder)
-        register("fw/opacity", ::opacityBuilder)
 
         register("digia/stack", ::stackBuilder)
         register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
@@ -57,7 +56,6 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("fw/sized_box", ::sizedBoxBuilder)
         register("digia/gridView", ::dummyBuilder)
         register("digia/expandable", ::expandableBuilder)
-        register("expandable", ::expandableBuilder)
         register("digia/richText", ::dummyBuilder)
         register("digia/calendar", ::dummyBuilder)
 }
