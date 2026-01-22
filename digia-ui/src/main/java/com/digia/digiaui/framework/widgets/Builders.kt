@@ -11,6 +11,9 @@ import com.digia.digiaui.framework.base.VirtualNode
 import com.digia.digiaui.framework.models.CommonProps
 import com.digia.digiaui.framework.models.Props
 import com.digia.digiaui.framework.models.VWNodeData
+import com.digia.digiaui.framework.widgets.tabview.tabBarBuilder
+import com.digia.digiaui.framework.widgets.tabview.tabViewContentBuilder
+import com.digia.digiaui.framework.widgets.tabview.tabViewControllerBuilder
 
 /** Register all built-in widgets with the registry */
 fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
@@ -59,6 +62,11 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/gridView", ::dummyBuilder)
         register("digia/richText", ::dummyBuilder)
         register("digia/calendar", ::dummyBuilder)
+
+        // Register TabView widgets
+        register("digia/tabController", ::tabViewControllerBuilder)
+        register("digia/tabBar", ::tabBarBuilder)
+        register("digia/tabViewContent", ::tabViewContentBuilder)
 }
 
 fun dummyBuilder(
