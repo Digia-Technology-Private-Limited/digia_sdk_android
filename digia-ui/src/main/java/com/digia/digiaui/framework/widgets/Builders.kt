@@ -32,6 +32,15 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/conditionalBuilder", ::conditionalBuilder)
         register("digia/conditionalItem", ::conditionalItemBuilder)
 
+
+        // Register list widget
+        register("digia/listView", ::listViewBuilder)
+
+        register("digia/streamBuilder", ::streamBuilderBuilder)
+
+        register("digia/conditionalBuilder", ::conditionalBuilder)
+        register("digia/conditionalItem", ::conditionalItemBuilder)
+
         // Register Scaffold widget (commented out for now)
         register("fw/scaffold", ::scaffoldBuilder)
         // Register AppBar widget
@@ -153,6 +162,7 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/lottie", ::lottieBuilder)
         register("digia/linearProgressBar", ::linearProgressBarBuilder)
         register("digia/textFormField", ::textFormFieldBuilder)
+        register("digia/pinField", ::pinFieldBuilder)
         register("digia/videoPlayer", ::videoPlayerBuilder)
         register("digia/button", ::buttonBuilder)
         register("digia/image", ::imageBuilder)
@@ -160,6 +170,12 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/carousel", ::carouselBuilder)
         register("digia/wrap", ::wrapBuilder)
         register("digia/opacity", ::opacityBuilder)
+        register("opacity", ::opacityBuilder)
+        register("fw/opacity", ::opacityBuilder)
+
+        register("digia/stack", ::stackBuilder)
+        register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
+
         register("digia/carousel", ::carouselBuilder)
         register("digia/wrap", ::wrapBuilder)
         register("digia/opacity", ::opacityBuilder)
