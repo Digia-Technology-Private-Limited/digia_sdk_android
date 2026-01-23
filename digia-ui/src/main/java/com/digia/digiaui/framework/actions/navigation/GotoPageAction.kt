@@ -11,6 +11,8 @@ import com.digia.digiaui.framework.expr.ScopeContext
 import com.digia.digiaui.framework.models.ExprOr
 import com.digia.digiaui.framework.navigation.NavigationManager
 import com.digia.digiaui.framework.utils.JsonLike
+import com.digia.digiaui.framework.utils.asSafe
+import com.digia.digiaui.utils.asSafe
 
 /**
  * GotoPage Action (NavigateToPageAction)
@@ -66,25 +68,24 @@ class GotoPageProcessor : ActionProcessor<GotoPageAction>() {
     ): Any? {
         try {
             // Evaluate page data - matches Flutter's deepEvaluate
-            val pageData = action.pageData?.evaluate<JsonLike>(scopeContext)
+            val pageEvaluatedData = action.pageData?.deepEvaluate(scopeContext)
+            val pageData=asSafe<JsonLike>(pageEvaluatedData)
             if (pageData == null) {
                 println("GotoPageAction: No pageData provided")
                 return null
             }
 
-            // Extract page ID from pageData - Flutter uses 'id' field
-            val pageId = (pageData["id"] as? String) 
-                ?: (pageData["pageId"] as? String) 
-                ?: (pageData["route"] as? String)
+            // Extract page ID from pageData
+            val pageId = asSafe<String>(pageData["id"])
+
             
             if (pageId == null) {
                 throw IllegalArgumentException("Null value for 'id' in pageData")
             }
 
             // Extract page arguments - Flutter uses 'args' field
-            @Suppress("UNCHECKED_CAST")
-            val evaluatedArgs = (pageData["args"] as? Map<String, Any?>) 
-                ?: (pageData["pageArgs"] as? Map<String, Any?>)
+            val evaluatedArgs = asSafe<JsonLike>(pageData["args"])
+
 
             // Evaluate navigation flags
             val shouldRemovePreviousScreens = action.shouldRemovePreviousScreensInStack?.evaluate<Boolean>(scopeContext) ?: false

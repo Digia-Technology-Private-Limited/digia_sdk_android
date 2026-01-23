@@ -1,5 +1,6 @@
 package com.digia.digiaui.init
 
+import com.digia.digiaexpr.ast.ASTNode
 import com.digia.digiaexpr.callable.ExprCallableImpl
 import com.digia.digiaexpr.callable.ExprClass
 import com.digia.digiaexpr.callable.ExprClassInstance
@@ -10,7 +11,9 @@ import com.digia.digiaui.framework.message.MessageBus
 import com.digia.digiaui.network.NetworkClient
 import com.digia.digiaui.utils.DigiaInspector
 import com.digia.digiaui.utils.DigiaUIHost
+import kotlin.collections.map
 import kotlin.collections.mapOf
+import kotlin.toString
 
 /**
  * Singleton manager for accessing the initialized Digia UI instance.
@@ -100,36 +103,49 @@ class DigiaUIManager private constructor() {
      */
     val jsVars: Map<String, Any>
         get() {
-    return      mapOf(
+            return mapOf(
                 "js" to ExprClassInstance(
                     ExprClass(
-                        name = "js", fields = mutableMapOf(), methods = mapOf(
+                        name = "js",
+                        fields = mutableMapOf(),
+                        methods = mapOf(
                             "eval" to ExprCallableImpl(
-                            _arity = 2,
-                            fn = { evaluator, arguments ->
-                                safeInstance?.dslConfig?.jsFunctions?.callJs(
-                                    arguments[0].toString(),
-                                    arguments
+                                _arity = 2,
+                                fn = { evaluator, arguments ->
+                                    val first = _toValue<String>(evaluator, arguments.getOrNull(0))
+                                        ?: arguments.getOrNull(0)?.toString()
+                                        ?: ""
+                                    val rest: List<Any?> = arguments
                                         .drop(1)
-                                        .map { it }
-                                )
-                            }
+                                        .map { arg -> _toValue(evaluator, arg) }
+                                    safeInstance?.dslConfig?.jsFunctions?.callJs(first, rest)
+                                }
+                            )
                         )
-
-                    )))
+                    )
+                )
             )
         }
 
 
-//    fn: (evaluator, arguments) {
-//        return safeInstance?.dslConfig.jsFunctions?.callJs(
-//            _toValue<String>(evaluator, arguments[0])!,
-//            arguments
-//                .skip(1)
-//                .map((e) => _toValue(evaluator, e))
-//        .toList());
-//        ),
-//        arity: 2
+    private fun <T> _toValue(evaluator: Any?, obj: Any?): T? {
+        if (obj == null) return null
+
+        if (obj is ASTNode) {
+            try {
+                val evalMethod = evaluator?.javaClass?.methods?.firstOrNull { it.name == "eval" && it.parameterCount == 1 }
+                val result = evalMethod?.invoke(evaluator, obj)
+                @Suppress("UNCHECKED_CAST")
+                return result as T?
+            } catch (t: Throwable) {
+                return null
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return obj as T?
+    }
+
 
     companion object {
         @Volatile private var INSTANCE: DigiaUIManager? = null

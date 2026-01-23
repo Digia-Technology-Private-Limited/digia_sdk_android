@@ -249,28 +249,6 @@ class VWAsyncBuilder(
 }
 
 
-private suspend fun executeActionAndAwait(
-    payload: RenderPayload,
-    context: Context,
-    actionFlow: ActionFlow?,
-    actionExecutor: ActionExecutor,
-    stateContext: StateContext?,
-    resourceProvider: UIResources?,
-    incomingScopeContext: ScopeContext? = null,
-) {
-    if (actionFlow == null) return
-
-    val combinedContext = payload.chainExprContext(incomingScopeContext)
-    val job = actionExecutor.execute(
-        context = context,
-        actionFlow = actionFlow,
-        scopeContext = combinedContext,
-        stateContext = stateContext,
-        resourcesProvider = resourceProvider,
-    )
-    job.join()
-}
-
 
 private fun getFutureType(
     props: AsyncBuilderProps,

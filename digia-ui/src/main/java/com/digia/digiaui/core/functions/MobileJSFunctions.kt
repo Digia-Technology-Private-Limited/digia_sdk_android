@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -21,6 +23,7 @@ class MobileJSFunctions(context: Context) : JSFunctions() {
     private var quickJSContext: QuickJSContext? = null
     private var jsFile: String = ""
     private val appContext: Context = context.applicationContext
+    private val quickJSDispatcher = newSingleThreadContext("QuickJS")
     
     companion object {
         private const val TAG = "MobileJSFunctions"
@@ -28,7 +31,9 @@ class MobileJSFunctions(context: Context) : JSFunctions() {
 
     override suspend fun initFunctions(strategy: FunctionInitStrategy): Boolean {
         // Initialize QuickJS loader
-        QuickJSLoader.init()
+        withContext(quickJSDispatcher) {
+            QuickJSLoader.init()
+        }
         log("QuickJS Loader initialized")
         
         return try {
@@ -44,14 +49,18 @@ class MobileJSFunctions(context: Context) : JSFunctions() {
                     }
                     
                     jsFile = file.readText()
-                    initializeRuntime()
+                    withContext(quickJSDispatcher) {
+                        initializeRuntime()
+                    }
                     true
                 }
                 is PreferLocal -> {
                     jsFile = withContext(Dispatchers.IO) {
                         appContext.assets.open(strategy.localPath).bufferedReader().use { it.readText() }
                     }
-                    initializeRuntime()
+                    withContext(quickJSDispatcher) {
+                        initializeRuntime()
+                    }
                     true
                 }
             }
@@ -80,34 +89,36 @@ class MobileJSFunctions(context: Context) : JSFunctions() {
     }
 
     override fun callJs(fnName: String, data: Any?): Any? {
-        return try {
-            val runtime = quickJSContext 
-                ?: throw IllegalStateException("QuickJS runtime not initialized. Call initFunctions() first.")
-            
-            // Encode input to JSON
-            val input = gson.toJson(data)
-            
-            // Evaluate JavaScript function
-            val jsCode = "JSON.stringify($fnName($input))"
-            val result = runtime.evaluate(jsCode) as? String
-            
-            // Check if result is an error
-            if (result != null && result.contains("Error")) {
-                handleJsError(fnName, input, result)
-                throw Exception("Error running function $fnName: $result")
+        return runBlocking(quickJSDispatcher) {
+            try {
+                val runtime = quickJSContext 
+                    ?: throw IllegalStateException("QuickJS runtime not initialized. Call initFunctions() first.")
+                
+                // Encode input to JSON
+                val input = gson.toJson(data)
+                
+                // Evaluate JavaScript function
+                val jsCode = "JSON.stringify($fnName($input))"
+                val result = runtime.evaluate(jsCode) as? String
+                
+                // Check if result is an error
+                if (result != null && result.contains("Error")) {
+                    handleJsError(fnName, input, result)
+                    throw Exception("Error running function $fnName: $result")
+                }
+                
+                // Decode result from JSON
+                if (result == null) return@runBlocking null
+                gson.fromJson(result, Any::class.java)
+            } catch (e: Exception) {
+                logError("Error calling JS function: $fnName", e)
+                throw e
             }
-            
-            // Decode result from JSON
-            if (result == null) return null
-            gson.fromJson(result, Any::class.java)
-        } catch (e: Exception) {
-            logError("Error calling JS function: $fnName", e)
-            throw e
         }
     }
 
     override suspend fun callAsyncJs(fnName: String, data: Any?): Any? {
-        return withContext(Dispatchers.IO) {
+        return withContext(quickJSDispatcher) {
             try {
                 val runtime = quickJSContext 
                     ?: throw IllegalStateException("QuickJS runtime not initialized. Call initFunctions() first.")
@@ -188,6 +199,7 @@ class MobileJSFunctions(context: Context) : JSFunctions() {
     fun destroy() {
         quickJSContext?.close()
         quickJSContext = null
+        quickJSDispatcher.close()
         log("QuickJS runtime destroyed")
     }
 }
