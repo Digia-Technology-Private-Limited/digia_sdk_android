@@ -26,6 +26,39 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
 
         // Register list widget
         register("digia/listView", ::listViewBuilder)
+
+        register("digia/streamBuilder", ::streamBuilderBuilder)
+
+        register("digia/conditionalBuilder", ::conditionalBuilder)
+        register("digia/conditionalItem", ::conditionalItemBuilder)
+
+        // Register Scaffold widget (commented out for now)
+        register("fw/scaffold", ::scaffoldBuilder)
+        // Register AppBar widget
+        register("digia/appBar", ::appBarBuilder)
+        register("fw/appBar", ::appBarBuilder)
+        register("digia/circularProgressBar", ::circularProgressBarBuilder)
+        register("digia/futureBuilder", ::futureBuilder)
+        register("digia/lottie", ::lottieBuilder)
+        register("digia/linearProgressBar", ::linearProgressBarBuilder)
+        register("digia/textFormField", ::textFormFieldBuilder)
+        register("digia/videoPlayer", ::videoPlayerBuilder)
+        register("digia/button", ::buttonBuilder)
+        register("digia/image", ::imageBuilder)
+        register("digia/container", ::containerBuilder)
+        register("digia/carousel", ::carouselBuilder)
+        register("digia/wrap", ::wrapBuilder)
+        register("digia/opacity", ::opacityBuilder)
+        register("opacity", ::opacityBuilder)
+        register("fw/opacity", ::opacityBuilder)
+
+        register("digia/stack", ::stackBuilder)
+        register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
+        register("digia/styledVerticalDivider", ::vwVerticalDividerBuilder)
+
+
+        // Register list widget
+        register("digia/listView", ::listViewBuilder)
     // Register layout widgets
     register("digia/column", ::columnBuilder)
     register("digia/row", ::rowBuilder)
