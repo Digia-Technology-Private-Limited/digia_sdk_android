@@ -11,6 +11,9 @@ import com.digia.digiaui.framework.base.VirtualNode
 import com.digia.digiaui.framework.models.CommonProps
 import com.digia.digiaui.framework.models.Props
 import com.digia.digiaui.framework.models.VWNodeData
+import com.digia.digiaui.framework.widgets.tabview.tabBarBuilder
+import com.digia.digiaui.framework.widgets.tabview.tabViewContentBuilder
+import com.digia.digiaui.framework.widgets.tabview.tabViewControllerBuilder
 import com.digia.digiaui.framework.widgets.story.storyBuilder
 import com.digia.digiaui.framework.widgets.story.storyVideoPlayerBuilder
 
@@ -23,6 +26,7 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/column", ::columnBuilder)
         register("digia/row", ::rowBuilder)
         //    register("digia/stack", ::stackBuilder)
+
 
 
         // Register list widget
@@ -168,6 +172,10 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/stack", ::stackBuilder)
         register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
 
+
+        register("digia/stack", ::stackBuilder)
+        register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
+
         register("fw/sizedBox", ::sizedBoxBuilder)
         register("fw/sized_box", ::sizedBoxBuilder)
         register("digia/safeArea", ::safeAreaBuilder)
@@ -276,6 +284,11 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/gridView", ::dummyBuilder)
         register("digia/richText", ::dummyBuilder)
         register("digia/calendar", ::dummyBuilder)
+
+        // Register TabView widgets
+        register("digia/tabController", ::tabViewControllerBuilder)
+        register("digia/tabBar", ::tabBarBuilder)
+        register("digia/tabViewContent", ::tabViewContentBuilder)
         register("digia/masonryGridView", ::masonryGridBuilder)
 
         register("fw/sizedBox", ::sizedBoxBuilder)
