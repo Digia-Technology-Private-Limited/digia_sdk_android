@@ -37,6 +37,9 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
 
     // Register web/youtube/animations
     register("digia/youtubePlayer", ::youtubePlayerBuilder)
+    register("digia/checkBox", ::checkBoxBuilder)
+    register("digia/checkbox", ::checkBoxBuilder)
+    register("digia/switch", ::switchBuilder)
     register("digia/webView", ::webViewBuilder)
     register("digia/animatedBuilder", ::animatedBuilderBuilder)
     register("digia/animatedSwitcher", ::animatedSwitcherBuilder)

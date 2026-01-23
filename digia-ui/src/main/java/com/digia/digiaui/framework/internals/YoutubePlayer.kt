@@ -1,20 +1,21 @@
 package com.digia.digiaui.framework.internals
 
-import android.annotation.SuppressLint
-import android.webkit.WebChromeClient
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import java.net.URLDecoder
 
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun InternalYoutubePlayer(
     videoUrl: String,
@@ -24,43 +25,65 @@ fun InternalYoutubePlayer(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val videoId = remember(videoUrl) { extractVideoId(videoUrl) }
 
-    val embedUrl = remember(videoId, isMuted, loop, autoPlay) {
-        if (videoId.isBlank()) return@remember "about:blank"
-        val autoplay = if (autoPlay) 1 else 0
-        val mute = if (isMuted) 1 else 0
-        val loopParam = if (loop) 1 else 0
-        // playlist required for loop in embed
-        "https://www.youtube.com/embed/$videoId?autoplay=$autoplay&mute=$mute&loop=$loopParam&playlist=$videoId&controls=0&fs=0&playsinline=1"
-    }
+    var currentPlayer by remember { mutableStateOf<YouTubePlayer?>(null) }
+    var currentView by remember { mutableStateOf<YouTubePlayerView?>(null) }
+    var lastVideoId by remember { mutableStateOf<String?>(null) }
 
-    val webView = remember {
-        WebView(context).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.mediaPlaybackRequiresUserGesture = false
-            settings.cacheMode = WebSettings.LOAD_DEFAULT
-            webChromeClient = WebChromeClient()
-            webViewClient = WebViewClient()
-        }
-    }
-
-    LaunchedEffect(embedUrl) {
-        webView.loadUrl(embedUrl)
-    }
-
-    DisposableEffect(Unit) {
+    DisposableEffect(lifecycleOwner) {
         onDispose {
-            webView.stopLoading()
-            webView.destroy()
+            currentPlayer = null
+            lastVideoId = null
+            currentView?.let { view ->
+                lifecycleOwner.lifecycle.removeObserver(view)
+                view.release()
+            }
+            currentView = null
         }
     }
 
     AndroidView(
         modifier = modifier,
-        factory = { webView },
-        update = { it.loadUrl(embedUrl) }
+        factory = {
+            val view = YouTubePlayerView(context).also {
+                currentView = it
+                lifecycleOwner.lifecycle.addObserver(it)
+
+                it.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                    override fun onReady(youTubePlayer: YouTubePlayer) {
+                        currentPlayer = youTubePlayer
+
+                        if (videoId.isNotBlank()) {
+                            lastVideoId = videoId
+                            if (autoPlay) youTubePlayer.loadVideo(videoId, 0f) else youTubePlayer.cueVideo(videoId, 0f)
+                        }
+
+                        if (isMuted) youTubePlayer.mute() else youTubePlayer.unMute()
+                    }
+
+                    override fun onStateChange(youTubePlayer: YouTubePlayer, state: PlayerConstants.PlayerState) {
+                        if (loop && state == PlayerConstants.PlayerState.ENDED && videoId.isNotBlank()) {
+                            youTubePlayer.loadVideo(videoId, 0f)
+                        }
+                    }
+                })
+            }
+
+            view
+        },
+        update = {
+            val player = currentPlayer
+            if (player != null) {
+                if (isMuted) player.mute() else player.unMute()
+
+                if (videoId.isNotBlank() && videoId != lastVideoId) {
+                    lastVideoId = videoId
+                    if (autoPlay) player.loadVideo(videoId, 0f) else player.cueVideo(videoId, 0f)
+                }
+            }
+        }
     )
 }
 

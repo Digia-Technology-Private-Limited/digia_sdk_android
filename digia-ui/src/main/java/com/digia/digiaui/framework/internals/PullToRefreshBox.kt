@@ -7,6 +7,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,26 +61,12 @@ fun PullToRefreshBox(
     Box(modifier = modifier.pullRefresh(pullState, enabled = effectiveEnabled)) {
         content()
 
-        DigiaPullRefreshIndicator(
+        PullRefreshIndicator(
             refreshing = refreshing,
-            progress = pullState.progress,
-            indicatorTopPadding = indicatorTopPadding,
-            refreshingOffset = refreshingOffset,
-            indicatorColor = indicatorColor,
-    val state = rememberSwipeRefreshState(isRefreshing = refreshing)
-    SwipeRefresh(
-        state = state,
-        onRefresh = onRefresh,
-        modifier = modifier,
-        indicatorColor = indicatorColor,
-        backgroundColor = indicatorBackgroundColor,
-        indicatorPadding = indicatorTopPadding,
-        strokeWidth = strokeWidth,
-        enabled = enabled,
-        triggerMode = com.aakarshrestha.compose.swiperefresh.SwipeRefreshTriggerMode.OnEdge,
-        content = content
-    )
-    } else {
-        indicatorTopPadding + (refreshingOffset - indicatorTopPadding) * clampedProgress
-// No longer needed: DigiaPullRefreshIndicator, handled by SwipeRefresh
-) {
+            state = pullState,
+            modifier = Modifier.align(Alignment.TopCenter),
+            contentColor = if (indicatorColor == Color.Unspecified) Color.Blue else indicatorColor,
+            backgroundColor = if (indicatorBackgroundColor == Color.Unspecified) Color.White else indicatorBackgroundColor,
+        )
+    }
+}

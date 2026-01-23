@@ -24,12 +24,18 @@ import com.digia.digiaui.framework.utils.JsonLike
 import com.digia.digiaui.framework.widgets.timer.TimerController
 import com.digia.digiaui.framework.widgets.timer.TimerWidget
 
+
+enum class TimerType {
+	COUNT_UP,
+	COUNT_DOWN,
+}
+
 data class TimerProps(
 	val duration: ExprOr<Int>? = null,
 	val initialValue: ExprOr<Int>? = null,
 	val controller: ExprOr<TimerController>? = null,
 	val updateInterval: ExprOr<Int>? = null,
-	val isCountDown: ExprOr<Boolean>? = null,
+	val timerType: TimerType = TimerType.COUNT_DOWN,
 	val onTick: ActionFlow? = null,
 	val onTimerEnd: ActionFlow? = null,
 ) {
@@ -40,7 +46,11 @@ data class TimerProps(
 				initialValue = ExprOr.fromValue(json["initialValue"]),
 				controller = ExprOr.fromValue(json["controller"]),
 				updateInterval = ExprOr.fromValue(json["updateInterval"]),
-				isCountDown = ExprOr.fromValue(json["isCountDown"]),
+				timerType = when (json["timerType"] as? String) {
+					"countUp" -> TimerType.COUNT_UP
+					"countDown" -> TimerType.COUNT_DOWN
+					else -> TimerType.COUNT_DOWN
+				},
 				onTick = (json["onTick"] as? JsonLike)?.let { ActionFlow.fromJson(it) },
 				onTimerEnd = (json["onTimerEnd"] as? JsonLike)?.let { ActionFlow.fromJson(it) },
 			)
@@ -77,7 +87,7 @@ class VWTimer(
 		}
 
 		val duration = payload.evalExpr(props.duration) ?: 0
-		val isCountDown = payload.evalExpr(props.isCountDown) ?: false
+		val isCountDown = props.timerType==TimerType.COUNT_DOWN
 		val initialValue = payload.evalExpr(props.initialValue) ?: (if (isCountDown) duration else 0)
 		val updateIntervalSeconds = payload.evalExpr(props.updateInterval) ?: 1
 		val updateIntervalMs = updateIntervalSeconds.coerceAtLeast(0).toLong() * 1000L
