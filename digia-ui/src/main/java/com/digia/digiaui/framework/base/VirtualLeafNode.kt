@@ -28,18 +28,9 @@ abstract class VirtualLeafNode<T>(
 
         if (!isVisible) return
 
-        val align = commonProps?.align
 
-//        if (align != null) {
-//            Box(
-////                modifier = Modifier.fillMaxWidth(), // optional, configurable
-//                contentAlignment = align.toComposeAlignment()
-//            ) {
-//                Render(extendedPayload)
-//            }
-//        } else {
-            Render(extendedPayload)
-//        }
+        Render(extendedPayload)
+
     }
 
 

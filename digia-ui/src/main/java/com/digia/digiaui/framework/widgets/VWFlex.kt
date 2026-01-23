@@ -128,7 +128,7 @@ class VWFlex(
                     modifier = buildRowModifier(payload) .applyMainAxisSize()
                         .let {
                             if (props.isScrollable == true)
-                                it.verticalScroll(rememberScrollState())
+                                it.horizontalScroll(rememberScrollState())
                             else it
                         },
                     horizontalArrangement = toMainAxisAlignmentHorizontal(props.mainAxisAlignment),
@@ -283,6 +283,7 @@ class VWFlex(
             else -> Alignment.CenterHorizontally
         }
     }
+
 
     private fun toMainAxisAlignmentHorizontal(value: String?): Arrangement.Horizontal {
         return when (value) {

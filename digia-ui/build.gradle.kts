@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.digia"
-version = "1.0.0"
+version = "1.0.0-beta.1"
 
 android {
     namespace = "com.digia.digiaui"
@@ -61,10 +61,15 @@ android {
             manifest.srcFile("src/main/AndroidManifest.xml")
         }
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
-    implementation(libs.digiaexpr)
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.7.2")
@@ -73,6 +78,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.animation:animation")
     implementation(libs.lottie.compose)
 
 
@@ -86,13 +93,19 @@ dependencies {
     // JSON
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // Markdown (Markwon)
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
+    implementation("io.noties.markwon:linkify:4.6.2")
+
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
+implementation(libs.digia.expr.kt)
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
@@ -109,6 +122,9 @@ dependencies {
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("io.coil-kt:coil-svg:2.5.0") 
+
+    // YouTube Player (native)
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.compose.material3)
     implementation(libs.androidx.compose.foundation.layout)
@@ -120,6 +136,7 @@ dependencies {
     implementation(libs.androidx.media3.ui.compose.material3)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.compose.foundation)
 //    implementation(libs.androidx.navigation.runtime.ktx)
 
 
@@ -139,7 +156,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.digia"
                 artifactId = "digia-ui"
-                version = "1.0.0"
+version = "1.0.0-beta.1"
 
                 pom {
                     name.set("Digia UI Compose")

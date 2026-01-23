@@ -22,10 +22,29 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     // Register layout widgets
     register("digia/column", ::columnBuilder)
     register("digia/row", ::rowBuilder)
-    //    register("digia/stack", ::stackBuilder)
+
+    register("digia/stack", ::stackBuilder)
 
     // Register list widget
     register("digia/listView", ::listViewBuilder)
+
+    // Register page view widget
+    register("digia/pageView", ::pageViewBuilder)
+
+    // Register refresh indicator widget
+    register("digia/refreshIndicator", ::refreshIndicatorBuilder)
+
+    // Register markdown widget
+    register("digia/markdown", ::markdownBuilder)
+
+    // Register web/youtube/animations
+    register("digia/youtubePlayer", ::youtubePlayerBuilder)
+    register("digia/checkBox", ::checkBoxBuilder)
+    register("digia/checkbox", ::checkBoxBuilder)
+    register("digia/switch", ::switchBuilder)
+    register("digia/webView", ::webViewBuilder)
+    register("digia/animatedBuilder", ::animatedBuilderBuilder)
+    register("digia/animatedSwitcher", ::animatedSwitcherBuilder)
 
     register("digia/streamBuilder", ::streamBuilderBuilder)
 
@@ -49,7 +68,6 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/carousel", ::carouselBuilder)
     register("digia/wrap", ::wrapBuilder)
 
-    register("digia/stack", ::stackBuilder)
     register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
 
     register("fw/sizedBox", ::sizedBoxBuilder)
@@ -57,6 +75,17 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/gridView", ::dummyBuilder)
     register("digia/richText", ::dummyBuilder)
     register("digia/calendar", ::dummyBuilder)
+
+    register("fw/sizedBox",::sizedBoxBuilder)
+    register("fw/sized_box",::sizedBoxBuilder)
+    register("digia/timer", ::timerBuilder)
+    register("fw/timer", ::timerBuilder)
+    register("digia/overlay", ::overlayBuilder)
+    register("digia/richText",::dummyBuilder)
+    register("digia/styledHorizontalDivider",::dummyBuilder)
+    register("digia/calendar",::dummyBuilder)
+}
+
 
     // Story widgets
     register("digia/story", ::storyBuilder)
