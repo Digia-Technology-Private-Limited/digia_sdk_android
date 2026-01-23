@@ -16,9 +16,16 @@ import com.digia.digiaui.framework.widgets.story.storyVideoPlayerBuilder
 
 /** Register all built-in widgets with the registry */
 fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
-    // Register Text widget
-    register("digia/text", ::textBuilder)
+        // Register Text widget
+        register("digia/text", ::textBuilder)
 
+        // Register layout widgets
+        register("digia/column", ::columnBuilder)
+        register("digia/row", ::rowBuilder)
+        //    register("digia/stack", ::stackBuilder)
+
+        // Register list widget
+        register("digia/listView", ::listViewBuilder)
     // Register layout widgets
     register("digia/column", ::columnBuilder)
     register("digia/row", ::rowBuilder)
@@ -48,9 +55,39 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
 
     register("digia/streamBuilder", ::streamBuilderBuilder)
 
-    register("digia/conditionalBuilder", ::conditionalBuilder)
-    register("digia/conditionalItem", ::conditionalItemBuilder)
+        register("digia/streamBuilder", ::streamBuilderBuilder)
 
+        register("digia/conditionalBuilder", ::conditionalBuilder)
+        register("digia/conditionalItem", ::conditionalItemBuilder)
+
+        // Register Scaffold widget (commented out for now)
+        register("fw/scaffold", ::scaffoldBuilder)
+        // Register AppBar widget
+        register("digia/appBar", ::appBarBuilder)
+        register("fw/appBar", ::appBarBuilder)
+        register("digia/circularProgressBar", ::circularProgressBarBuilder)
+        register("digia/futureBuilder", ::futureBuilder)
+        register("digia/lottie", ::lottieBuilder)
+        register("digia/linearProgressBar", ::linearProgressBarBuilder)
+        register("digia/textFormField", ::textFormFieldBuilder)
+        register("digia/videoPlayer", ::videoPlayerBuilder)
+        register("digia/button", ::buttonBuilder)
+        register("digia/image", ::imageBuilder)
+        register("digia/container", ::containerBuilder)
+        register("digia/carousel", ::carouselBuilder)
+        register("digia/wrap", ::wrapBuilder)
+        register("digia/opacity", ::opacityBuilder)
+        register("digia/carousel", ::carouselBuilder)
+        register("digia/wrap", ::wrapBuilder)
+        register("digia/opacity", ::opacityBuilder)
+        register("opacity", ::opacityBuilder)
+        register("fw/opacity", ::opacityBuilder)
+
+        register("digia/webView", ::webViewBuilder)
+        register("fw/webView", ::webViewBuilder)
+
+        register("digia/stack", ::stackBuilder)
+        register("digia/styledHorizontalDivider", ::styledHorizontalDividerBuilder)
     // Register Scaffold widget (commented out for now)
     register("fw/scaffold", ::scaffoldBuilder)
     // Register AppBar widget
@@ -87,6 +124,12 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
     register("digia/calendar",::dummyBuilder)
 }
 
+        register("fw/sizedBox", ::sizedBoxBuilder)
+        register("fw/sized_box", ::sizedBoxBuilder)
+        register("digia/gridView", ::dummyBuilder)
+        register("digia/richText", ::dummyBuilder)
+        register("digia/calendar", ::dummyBuilder)
+}
 
     // Story widgets
     register("digia/story", ::storyBuilder)
