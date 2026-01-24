@@ -76,6 +76,7 @@ fun DefaultVirtualWidgetRegistry.registerBuiltInWidgets() {
         register("digia/tabViewContent", ::tabViewContentBuilder)
         register("digia/story", ::storyBuilder)
         register("digia/storyVideoPlayer", ::storyVideoPlayerBuilder)
+        register("digia/chart", ::chartBuilder)
 }
 
 fun dummyBuilder(
