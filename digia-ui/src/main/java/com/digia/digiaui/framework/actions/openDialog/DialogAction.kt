@@ -1,6 +1,7 @@
 package com.digia.digiaui.framework.actions.openDialog
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import com.digia.digiaui.framework.UIResources
 import com.digia.digiaui.framework.actions.base.Action
 import com.digia.digiaui.framework.actions.base.ActionFlow
@@ -11,7 +12,9 @@ import com.digia.digiaui.framework.expr.ScopeContext
 import com.digia.digiaui.framework.models.ExprOr
 import com.digia.digiaui.framework.state.StateContext
 import com.digia.digiaui.framework.utils.JsonLike
+import isDarkTheme
 import kotlinx.coroutines.launch
+import resourceColor
 
 /**
  * ShowDialog Action
@@ -59,7 +62,7 @@ class ShowDialogProcessor : ActionProcessor<ShowDialogAction>() {
         action: ShowDialogAction,
         scopeContext: ScopeContext?,
         stateContext: StateContext?,
-        resourceProvider: UIResources?,
+        resourcesProvider: UIResources?,
         id: String
     ): Any? {
         // Evaluate viewData to get component/view ID and arguments
@@ -89,12 +92,12 @@ class ShowDialogProcessor : ActionProcessor<ShowDialogAction>() {
             componentId = componentId,
             args = args,
             barrierDismissible = barrierDismissible,
-            barrierColor = barrierColorStr,
+            barrierColor = barrierColorStr ?.let { token -> resourceColor(token, resourcesProvider, isDarkTheme(context)) },
             onDismiss = { result ->
                 // Handle result if waitForResult is true
                 if (action.waitForResult && action.onResult != null) {
                     // Execute onResult callback with the result
-                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+//                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                         val resultContext = com.digia.digiaui.framework.expr.DefaultScopeContext(
                             variables = mapOf("result" to result),
                             enclosing = scopeContext
@@ -104,9 +107,9 @@ class ShowDialogProcessor : ActionProcessor<ShowDialogAction>() {
                             actionFlow = action.onResult,
                             scopeContext = resultContext,
                             stateContext = stateContext,
-                            resourcesProvider = resourceProvider
+                            resourcesProvider = resourcesProvider
                         )
-                    }
+//                    }
                 }
             }
         )

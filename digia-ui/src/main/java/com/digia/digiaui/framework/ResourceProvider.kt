@@ -1,3 +1,5 @@
+import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -73,4 +75,30 @@ fun resourceApiModel(key: String): APIModel? {
 @Composable
 fun resourceFontFactory(): DUIFontFactory? {
     return LocalUIResources.current.fontFactory
+}
+
+/* ---------------------------------------------------------
+ * Resource access helpers (NON-Composable; for Actions)
+ * --------------------------------------------------------- */
+
+fun isDarkTheme(context: Context): Boolean {
+    val nightModeFlags = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    return nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+}
+
+fun resourceColor(key: String, resources: UIResources?, isDark: Boolean): Color? {
+    return (if (isDark) resources?.darkColors else resources?.colors)?.get(key)
+        ?: ColorUtil.fromString(key)
+}
+
+fun resourceTextStyle(token: String, resources: UIResources?): TextStyle? {
+    return resources?.textStyles?.get(token)
+}
+
+fun resourceIcon(key: String, resources: UIResources?): ImageVector? {
+    return resources?.icons?.get(key)
+}
+
+fun resourceFontFactory(resources: UIResources?): DUIFontFactory? {
+    return resources?.fontFactory
 }

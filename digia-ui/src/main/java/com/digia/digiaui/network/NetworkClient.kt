@@ -165,7 +165,7 @@ class NetworkClient(
         return withContext(Dispatchers.IO) {
             val requestBody =
                     when (bodyType) {
-                        BodyType.JSON -> {
+                        BodyType.JSON, BodyType.GRAPHQL -> {
                             if (data == null) {
                                 null
                             } else {
@@ -197,8 +197,6 @@ class NetworkClient(
                                 )
                             }
                         }
-                        BodyType.GRAPHQL ->
-                                data?.toString()?.toRequestBody("application/json".toMediaTypeOrNull())
                     }
 
             // Remove headers already in base headers to avoid conflicts

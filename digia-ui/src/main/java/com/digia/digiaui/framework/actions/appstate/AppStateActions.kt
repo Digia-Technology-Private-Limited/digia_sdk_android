@@ -1,7 +1,6 @@
 package com.digia.digiaui.framework.actions.appstate
 
 import android.content.Context
-import com.digia.digiaui.framework.RenderPayload
 import com.digia.digiaui.framework.UIResources
 import com.digia.digiaui.framework.actions.base.Action
 import com.digia.digiaui.framework.actions.base.ActionId
@@ -61,7 +60,7 @@ class SetAppStateProcessor : ActionProcessor<SetAppStateAction>() {
         action: SetAppStateAction,
         scopeContext: ScopeContext?,
         stateContext: StateContext?,
-        resourceProvider: UIResources?,
+        resourcesProvider: UIResources?,
         id: String
     ): Any? {
         try {

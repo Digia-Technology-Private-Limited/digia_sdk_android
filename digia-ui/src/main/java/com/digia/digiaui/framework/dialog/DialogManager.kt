@@ -1,6 +1,8 @@
 package com.digia.digiaui.framework.dialog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -28,7 +30,7 @@ data class DialogRequest(
     val componentId: String,
     val args: JsonLike?,
     val barrierDismissible: Boolean,
-    val barrierColor: String?,
+    val barrierColor: Color?,
     val onDismiss: ((Any?) -> Unit)?
 )
 
@@ -49,7 +51,7 @@ class DialogManager {
         componentId: String,
         args: JsonLike? = null,
         barrierDismissible: Boolean = true,
-        barrierColor: String? = null,
+        barrierColor: Color? = null,
         onDismiss: ((Any?) -> Unit)? = null
     ) {
         _currentRequest.value = DialogRequest(
@@ -98,15 +100,36 @@ fun DialogHost(
             },
             properties = DialogProperties(
                 dismissOnBackPress = request.barrierDismissible,
-                dismissOnClickOutside = request.barrierDismissible
+                dismissOnClickOutside = false, // 👈 we handle clicks ourselves
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
             )
         ) {
+            // 🔥 Fullscreen container
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        request.barrierColor
+                            ?: Color.Black.copy(alpha = 0.5f)
+                    )
+                    .let { modifier ->
+                        if (request.barrierDismissible) {
+                            modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                dialogManager.dismiss()
+                            }
+                        } else modifier
+                    },
+                contentAlignment = Alignment.Center
+            ) {
 
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .wrapContentHeight(),
-                    shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surface,
                     tonalElevation = 6.dp
                 ) {
@@ -121,7 +144,7 @@ fun DialogHost(
                         )
                     }
                 }
-
+            }
         }
     }
 }

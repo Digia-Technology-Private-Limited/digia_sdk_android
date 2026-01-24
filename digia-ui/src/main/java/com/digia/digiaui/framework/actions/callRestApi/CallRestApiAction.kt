@@ -104,6 +104,7 @@ class CallRestApiProcessor : ActionProcessor<CallRestApiAction>() {
                     args = asSafe<JsonLike>(dataSource["args"])?.mapValues { (_, v) ->
                         ExprOr.fromValue(v)
                     },
+                    successCondition = action.successCondition?.evaluate(scopeContext),
                     onSuccess = { response ->
                         println("CallRestApiAction: API call successful")
                         

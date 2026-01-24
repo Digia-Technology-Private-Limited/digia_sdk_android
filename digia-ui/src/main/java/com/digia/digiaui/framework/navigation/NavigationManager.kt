@@ -58,8 +58,8 @@ object NavigationManager {
     /**
      * Request to pop the current page
      */
-    fun pop(result: Any? = null) {
-        _navigationEvents.tryEmit(NavigationEvent.Pop(result))
+    fun pop(result: Any? = null, maybe: Boolean = true) {
+        _navigationEvents.tryEmit(NavigationEvent.Pop(result, maybe))
     }
 
     /**
@@ -124,7 +124,7 @@ sealed class NavigationEvent {
         val replace: Boolean = false
     ) : NavigationEvent()
 
-    data class Pop(val result: Any? = null) : NavigationEvent()
+    data class Pop(val result: Any? = null, val maybe: Boolean = true) : NavigationEvent()
 
     data class PopTo(
         val route: PageRoute,

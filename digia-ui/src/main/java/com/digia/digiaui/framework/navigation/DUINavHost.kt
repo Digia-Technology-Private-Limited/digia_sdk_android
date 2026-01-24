@@ -172,6 +172,8 @@ class DUINavState {
         return _stack.removeLast()
     }
 
+    fun canPop() = _stack.size > 1
+
     fun popTo(pageId: String, inclusive: Boolean) {
         val index = _stack.indexOfLast { it.pageId == pageId }
         if (index == -1) return
@@ -198,10 +200,12 @@ class DUINavController internal constructor(
         else state.push(entry)
     }
 
-    fun pop(result: Any? = null) {
-        val popped = state.pop()
-        if (popped != null && result != null) {
-            NavigationManager.executeResultCallback(popped.pageId, result)
+    fun pop(result: Any? = null, maybe: Boolean = true) {
+        if (!maybe || state.canPop()) {
+            val popped = state.pop()
+            if (popped != null && result != null) {
+                NavigationManager.executeResultCallback(popped.pageId, result)
+            }
         }
     }
 
@@ -246,7 +250,7 @@ fun DUINavHost(
                 }
 
                 is NavigationEvent.Pop -> {
-                    navController.pop(event.result)
+                    navController.pop(event.result, event.maybe)
                 }
 
                 is NavigationEvent.PopTo -> {
