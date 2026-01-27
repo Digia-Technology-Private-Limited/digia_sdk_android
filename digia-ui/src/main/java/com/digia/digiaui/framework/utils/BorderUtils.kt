@@ -3,7 +3,7 @@ package com.digia.digiaui.framework.utils
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
  *
  * @param shape The shape of the border.
  * @param borderWidth The width of the border.
- * @param borderColor The color of the border.
+ * @param borderBrush The brush of the border.
  * @param borderPattern "solid", "dashed", or "dotted".
  * @param dashPattern Custom dash pattern [on, off, on, off...].
  * @param strokeCap "round", "square", "butt".
@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 fun Modifier.drawCustomBorder(
         shape: Shape,
         borderWidth: Dp,
-        borderColor: Color,
+        borderBrush: Brush,
         borderPattern: String? = null,
         dashPattern: List<Double>? = null,
         strokeCap: String? = null,
@@ -41,14 +41,14 @@ fun Modifier.drawCustomBorder(
                             name = "drawCustomBorder"
                             properties["shape"] = shape
                             properties["borderWidth"] = borderWidth
-                            properties["borderColor"] = borderColor
+                            properties["borderBrush"] = borderBrush
                             properties["borderPattern"] = borderPattern
                             properties["dashPattern"] = dashPattern
                             properties["strokeCap"] = strokeCap
                             properties["strokeJoin"] = strokeJoin
                         }
         ) {
-            if (borderWidth <= 0.dp || borderColor == Color.Transparent) {
+            if (borderWidth <= 0.dp) {
                 return@composed this
             }
 
@@ -122,8 +122,8 @@ fun Modifier.drawCustomBorder(
                             // Solid or unknown
                             else -> {
                                 if (!dashPattern.isNullOrEmpty()) {
-                                    // If user provided dashPattern but didn't say "dashed", treat
-                                    // as custom dashed
+                                    // If user provided dashPattern but didn't treat as custom
+                                    // dashed
                                     val intervals =
                                             dashPattern
                                                     .map { it.toFloat() * density }
@@ -158,12 +158,11 @@ fun Modifier.drawCustomBorder(
                     drawContent()
 
                     // Draw the border on top
-                    // Draw the border on top
                     val outline = shape.createOutline(size, layoutDirection, this)
                     when (outline) {
                         is androidx.compose.ui.graphics.Outline.Rectangle -> {
                             drawRect(
-                                    color = borderColor,
+                                    brush = borderBrush,
                                     topLeft = outline.rect.topLeft,
                                     size = outline.rect.size,
                                     style = stroke
@@ -171,10 +170,10 @@ fun Modifier.drawCustomBorder(
                         }
                         is androidx.compose.ui.graphics.Outline.Rounded -> {
                             val path = Path().apply { addRoundRect(outline.roundRect) }
-                            drawPath(path = path, color = borderColor, style = stroke)
+                            drawPath(path = path, brush = borderBrush, style = stroke)
                         }
                         is androidx.compose.ui.graphics.Outline.Generic -> {
-                            drawPath(path = outline.path, color = borderColor, style = stroke)
+                            drawPath(path = outline.path, brush = borderBrush, style = stroke)
                         }
                     }
                 }

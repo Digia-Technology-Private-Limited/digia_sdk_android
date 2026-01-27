@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
@@ -246,12 +247,13 @@ class VWContainer(
          * ========================================================== */
         containerProps.border?.let { border ->
             val color = payload.evalColor(border.borderColor) ?: Color.Transparent
+            val borderBrush = border.borderGradient?.toBrush(payload) ?: SolidColor(color)
             if (borderWidth > 0.dp) {
                 modifier =
                         modifier.drawCustomBorder(
                                 shape = shape,
                                 borderWidth = borderWidth,
-                                borderColor = color,
+                                borderBrush = borderBrush,
                                 borderPattern = border.borderPattern,
                                 dashPattern = border.dashPattern,
                                 strokeCap = border.strokeCap
