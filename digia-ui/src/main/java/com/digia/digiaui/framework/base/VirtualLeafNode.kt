@@ -19,8 +19,11 @@ abstract class VirtualLeafNode<T>(
     parentProps: Props? = null
 ) : VirtualNode(refName, parent, parentProps) {
 
+    private var parentModifier: Modifier = Modifier
+
     @Composable
     override fun ToWidget(payload: RenderPayload) {
+        RenderNode(widget = this, payload = payload)
 
         val extendedPayload =
             refName?.let { payload.withExtendedHierarchy(it) } ?: payload
@@ -48,8 +51,17 @@ abstract class VirtualLeafNode<T>(
 
 
     @Composable
+  override  fun ToWidgetWithModifier(payload: RenderPayload, modifier: Modifier) {
+        parentModifier= modifier
+        ToWidget(payload)
+    }
+
+
+    @Composable
     override fun Modifier.buildModifier(payload: RenderPayload): Modifier {
-        return this.applyCommonProps(payload, commonProps)
+        return this.applyCommonProps(payload, commonProps).let {
+            parentModifier?.let { parentMod -> it.then(parentMod) } ?: it
+        }
     }
 }
 
