@@ -1,6 +1,6 @@
-
 package com.digia.digiaui.framework.widgets
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.digia.digiaui.framework.RenderPayload
@@ -48,8 +48,11 @@ class VWYoutubePlayer(
 
 	@Composable
 	override fun Render(payload: RenderPayload) {
+		val evaluated = payload.evalExpr(props.videoUrl) ?: ""
+		val videoUrl = evaluated.trim()
+
 		InternalYoutubePlayer(
-			videoUrl = payload.evalExpr(props.videoUrl) ?: "",
+			videoUrl = videoUrl,
 			isMuted = payload.evalExpr(props.isMuted) ?: false,
 			loop = payload.evalExpr(props.loop) ?: false,
 			autoPlay = payload.evalExpr(props.autoPlay) ?: false,
